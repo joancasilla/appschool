@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Información de Colegiatura</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- jsPDF y html2canvas (para exportar a PDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  
+  <!-- 1. FORMULARIO PRINCIPAL -->
+  <section class="form-section">
+    <h2>Llenar Datos de Colegiatura</h2>
+    <form id="colegiaturaForm">
+
+      <!-- Familia -->
+      <div class="form-group">
+        <label for="inputFamilia">Familia:</label>
+        <input type="text" id="inputFamilia" placeholder="Ej. CASILLA DE LOS SANTOS" required>
+      </div>
+
+      <!-- Año Escolar -->
+      <div class="form-group">
+        <label for="inputAnioEscolar">Año Escolar:</label>
+        <input type="text" id="inputAnioEscolar" placeholder="2024 - 2025" required>
+      </div>
+
+      <!-- Fechas -->
+      <div class="form-group">
+        <label for="inputFechaEmision">Fecha Emisión (dd/mm/yyyy):</label>
+        <input type="text" id="inputFechaEmision" required>
+      </div>
+      <div class="form-group">
+        <label for="inputFechaVencimiento">Fecha Vencimiento (dd/mm/yyyy):</label>
+        <input type="text" id="inputFechaVencimiento" required>
+      </div>
+
+      <!-- Plan de Pago -->
+      <div class="form-group">
+        <label for="selectPlan">Plan de Pago:</label>
+        <select id="selectPlan" required>
+          <option value="" disabled selected>Seleccione un plan</option>
+          <option value="Plan A - 10 pagos">Plan A - 10 pagos</option>
+          <option value="Plan A - 11 pagos">Plan A - 11 pagos</option>
+          <option value="Plan B - 2 pagos">Plan B - 2 pagos</option>
+          <option value="Plan C - 1 pago">Plan C - 1 pago</option>
+        </select>
+      </div>
+
+      <hr />
+      <h3>Estudiantes (máx. 5)</h3>
+      <p>1er estudiante: 0% descuento, 2do: 5%, 3ro: 10%, 4to: 15%, 5to: 25%.</p>
+      <div id="studentContainer">
+        <!-- Se agregan dinámicamente filas de estudiantes -->
+      </div>
+      <div class="form-group">
+        <button type="button" id="btnAddStudent">Agregar Estudiante</button>
+      </div>
+
+      <hr />
+      <h3>Descuentos / Cargos (manuales)</h3>
+      <p>Selecciona a qué estudiante se aplica. Usa porcentaje negativo (-10) para descuento, positivo (+5) para cargo.</p>
+      <div id="discountContainer">
+        <!-- Descuentos/Cargos manuales -->
+      </div>
+      <div class="form-group">
+        <button type="button" id="btnAddDiscount">Añadir Descuento/Cargo</button>
+      </div>
+
+      <!-- Botón para generar Recibo -->
+      <div class="form-group" style="margin-top:20px;">
+        <button type="submit">Generar Recibo</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- 2. VISTA PREVIA DEL RECIBO (lo que irá al PDF) -->
+  <section id="recibo-container" class="recibo-container" style="display: none;">
+    <!-- Encabezado (logo local + fechas) -->
+    <header class="recibo-header">
+      <div class="header-left">
+        <!-- Imagen tomada de carpeta local "images/logosmp.png" -->
+        <img
+          src="images/logosmp.png"
+          alt="Logo del Colegio"
+          class="logo-colegio"
+        >
+      </div>
+      <div class="header-right">
+        <div><strong>FECHA:</strong> <span id="fechaEmision"></span></div>
+        <div><strong>VENCE:</strong> <span id="fechaVencimiento"></span></div>
+      </div>
+    </header>
+
+    <h1>INFORMACIÓN DE COLEGIATURA</h1>
+    <div class="anio-escolar" id="anioEscolar"></div>
+
+    <!-- Datos principales (Familia, Plan de Pago, etc.) -->
+    <section class="datos-principales">
+      <div><strong>FAMILIA:</strong> <span id="nombreFamilia"></span></div>
+      <div><strong>PLAN DE PAGO:</strong> <span id="planSeleccionado"></span></div>
+    </section>
+
+    <!-- Sección Descuentos y Cargos (familiares, manuales, plan) -->
+    <section class="descuentos-cargos">
+      <h2>DETALLE DE CARGOS / DESCUENTOS</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Est.</th>
+            <th>Concepto</th>
+            <th>Base Aplicada</th>
+            <th>Porcentaje</th>
+            <th>Monto</th>
+          </tr>
+        </thead>
+        <tbody id="tablaDescuentos"></tbody>
+      </table>
+      <hr class="separator"/>
+
+      <div class="totales-descuentos">
+        <div>
+          <strong>TOTAL DE DESCUENTOS/CARGOS:</strong>
+          <span id="totalDescuentos">- RD$ 0.00</span>
+        </div>
+        <div>
+          <strong>TOTAL A COBRAR:</strong>
+          <span id="totalACobrar">RD$ 0.00</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección Acuerdo de Pago -->
+    <section class="acuerdo-pago">
+      <h2>ACUERDO DE PAGO</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Concepto</th>
+            <th>Monto a Pagar</th>
+            <th>Monto Pagado</th>
+          </tr>
+        </thead>
+        <tbody id="tablaAcuerdo"></tbody>
+      </table>
+      <div class="totales-pago">
+        <div>
+          <strong>TOTAL A PAGAR (Plan):</strong>
+          <span id="totalAPagar">RD$ 0.00</span>
+        </div>
+        <div>
+          <strong>TOTAL PAGADO (Plan):</strong>
+          <span id="totalPagado">RD$ 0.00</span>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- 3. Botón para Generar PDF (aparece al tener vista previa) -->
+  <div class="acciones" style="display: none;" id="accionesPDF">
+    <button id="btnGenerarPDF" class="pdf-button">Generar PDF</button>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
