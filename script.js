@@ -1,20 +1,49 @@
 //-------------------------------------------------------------------
-// 0. DATOS DE COLEGIATURA, DESCUENTO FAMILIAR, DESCUENTO PLAN
+// 0. DATOS DE COLEGIATURA BASE Y DESCUENTOS EXACTOS POR AÑO ESCOLAR
 //-------------------------------------------------------------------
-const colegiaturaAnual = {
+const colegiaturaBase = {
   "Inicial": 115488.75,
   "Primaria": 123632.19,
   "Secundaria": 132960.13
 };
 
-// Descuento familiar según el orden (1ro=0%, 2do=5%, 3ro=10%, 4to=15%, 5to=25%)
+/*
+  MONTOS FINALES EXACTOS tras el "Descuento Año Escolar".
+  Usaremos estos valores para forzar costSoFar a ese EXACT final
+  si no es 2025-2026 => 0% => sin descuento => final = base
+*/
+const yearFinal = {
+  "2022-2023": {
+    "Inicial": 65017.26,
+    "Primaria": 81954.53,
+    "Secundaria": 81954.53
+  },
+  "2023-2024": {
+    "Inicial": 79567.50,
+    "Primaria": 88585.15,
+    "Secundaria": 95268.82
+  },
+  "2024-2025": {
+    "Inicial": 97500.00,
+    "Primaria": 104375.00,
+    "Secundaria": 112250.00
+  },
+  "2025-2026": {
+    // sin descuento => final=base => discount=0
+    "Inicial": null,
+    "Primaria": null,
+    "Secundaria": null
+  }
+};
+
+// Descuento Familiar (orden)
 const familyDiscounts = [0, 5, 10, 15, 25];
 
-// Descuento extra según plan (B=8%, C=16%, A=0)
+// Descuento por Plan
 function getPlanDiscountPct(plan) {
   if (plan.includes("Plan B")) return 8;
   if (plan.includes("Plan C")) return 16;
-  return 0;
+  return 0; // Plan A => 0
 }
 
 //-------------------------------------------------------------------
@@ -41,8 +70,6 @@ const tablaAcuerdoBody = document.getElementById("tablaAcuerdo");
 const spanTotalAPagar = document.getElementById("totalAPagar");
 const spanTotalPagado = document.getElementById("totalPagado");
 
-let students = []; // info de estudiantes
-
 //-------------------------------------------------------------------
 // 2. FECHAS POR DEFECTO
 //-------------------------------------------------------------------
@@ -58,6 +85,8 @@ window.addEventListener("DOMContentLoaded", () => {
 //-------------------------------------------------------------------
 // 3. AGREGAR / ELIMINAR ESTUDIANTE
 //-------------------------------------------------------------------
+let students = [];
+
 document.getElementById("btnAddStudent").addEventListener("click", () => {
   if (students.length >= 5) {
     alert("Máximo 5 estudiantes.");
@@ -69,14 +98,14 @@ document.getElementById("btnAddStudent").addEventListener("click", () => {
 function addStudentRow() {
   const id = Date.now();
   const index = students.length;
-  const num = index + 1;
+  const numEst = index + 1;
 
   const div = document.createElement("div");
   div.classList.add("student-row");
   div.setAttribute("data-student-id", id);
 
   div.innerHTML = `
-    <label>Est. ${num}:</label>
+    <label>Est. ${numEst}:</label>
     <select class="nivel-select">
       <option value="Inicial">Inicial</option>
       <option value="Primaria">Primaria</option>
@@ -132,75 +161,94 @@ document.getElementById("btnAddDiscount").addEventListener("click", () => {
 });
 
 //-------------------------------------------------------------------
-// 5. AL ENVIAR FORM => CALCULAMOS
+// 5. AL ENVIAR FORM => CÁLCULOS
 //-------------------------------------------------------------------
 form.addEventListener("submit", (e) => {
   e.preventDefault();
 
-  // 5.1 Datos generales
+  // Datos generales
   const familia = document.getElementById("inputFamilia").value.trim();
-  const anioEscolar = document.getElementById("inputAnioEscolar").value.trim();
+  const anioSelect = document.getElementById("selectAnioEscolar").value;
   const fechaE = document.getElementById("inputFechaEmision").value.trim();
   const fechaV = document.getElementById("inputFechaVencimiento").value.trim();
   const planPago = document.getElementById("selectPlan").value;
 
-  // 5.2 Limpiar la tabla
   tablaDescuentosBody.innerHTML = "";
 
-  let baseSum = 0;
-  let finalSum = 0;
+  let baseSum = 0;  // suma de bases totales (para comparar)
+  let finalSum = 0; // suma final tras descuentos
   const discountRowsGlobal = [];
 
-  // Descuento extra por plan
+  // Plan B=8%, Plan C=16%, A=0
   const planDiscount = getPlanDiscountPct(planPago);
 
-  // 5.3 Recorremos cada estudiante
   students.forEach((st, index) => {
-    const level = st.selectNivel.value;
-    const baseNivel = colegiaturaAnual[level] || 0;
+    const nivel = st.selectNivel.value;
+    const base = colegiaturaBase[nivel];
 
-    // Comenzamos con costSoFar = 0
+    // (1) Cargo Colegiatura Base
     let costSoFar = 0;
-
-    // (1) CARGO BASE
-    costSoFar += baseNivel;
+    costSoFar += base;
     discountRowsGlobal.push({
       est: index + 1,
-      concepto: `Cargo Colegiatura Base (${level})`,
-      base: null,   // null => luego muestra “—”
+      concepto: `Cargo Colegiatura Base (${nivel})`,
+      base: null, // se mostrará “—”
       pct: 0,
-      monto: baseNivel
+      monto: base
     });
-    baseSum += baseNivel;
+    baseSum += base;
 
-    // (2) DESCUENTO POR PLAN (PRIMERO)
+    // (2) Descuento Año Escolar EXACTO
+    // Si anioSelect es “2025-2026”, no hay descuento => final= base
+    // De lo contrario, tomamos yearFinal[anioSelect][nivel] => "montoFinal"
+    const finalAnio = yearFinal[anioSelect]?.[nivel];
+    if (finalAnio !== null && finalAnio !== undefined) {
+      // Hacemos: discount = costSoFar - finalAnio
+      // Y forzamos costSoFar = finalAnio
+      const descAnio = costSoFar - finalAnio;
+      if (descAnio > 0) {
+        // Solo aplicamos si finalAnio < costSoFar
+        const pctAnio = (descAnio / costSoFar) * 100; // para mostrar en la tabla
+        discountRowsGlobal.push({
+          est: index + 1,
+          concepto: `Descuento Año Escolar (${anioSelect})`,
+          base: costSoFar,
+          pct: -pctAnio,
+          monto: descAnio
+        });
+        costSoFar = finalAnio;
+      }
+    }
+    // si finalAnio es null => no hay descuento => costSoFar = base (sin cambio)
+
+    // (3) Descuento Plan
     if (planDiscount > 0) {
-      const descPlanAmount = costSoFar * (planDiscount / 100);
+      const descPlan = costSoFar * (planDiscount / 100);
       discountRowsGlobal.push({
         est: index + 1,
         concepto: `Descuento por plan de pago - ${planPago}`,
         base: costSoFar,
         pct: -planDiscount,
-        monto: descPlanAmount
+        monto: descPlan
       });
-      costSoFar -= descPlanAmount;
+      costSoFar -= descPlan;
     }
 
-    // (3) DESCUENTO FAMILIAR
+    // (4) Descuento Familiar
     const famPct = familyDiscounts[index] || 0;
     if (famPct > 0) {
-      const descAmount = costSoFar * (famPct / 100);
+      const descFam = costSoFar * (famPct / 100);
       discountRowsGlobal.push({
         est: index + 1,
         concepto: "Descuento Familiar",
         base: costSoFar,
         pct: -famPct,
-        monto: descAmount
+        monto: descFam
       });
-      costSoFar -= descAmount;
+      costSoFar -= descFam;
     }
 
-    // (4) DESCUENTOS/CARGOS MANUALES
+    // (5) Descuentos/Cargos manuales
     const discountRows = discountContainer.querySelectorAll(".discount-row");
     discountRows.forEach((dr) => {
       const estSelect = dr.querySelector(".discount-student");
@@ -227,15 +275,15 @@ form.addEventListener("submit", (e) => {
     finalSum += costSoFar;
   });
 
-  // 5.4 Mostrar filas en la tabla
+  // Mostrar filas en la tabla
   discountRowsGlobal.forEach((row) => {
     let sign = "";
     if (row.pct < 0) sign = "-";
     else if (row.pct > 0) sign = "+";
 
-    // Si base=null => mostramos “—” en Base Aplicada
-    const baseAplicada = row.base === null 
-      ? "—" 
+    // Si base=null => "—"
+    const baseAplicada = row.base === null
+      ? "—"
       : "RD$ " + formatearMonto(row.base);
 
     const tr = document.createElement("tr");
@@ -243,13 +291,13 @@ form.addEventListener("submit", (e) => {
       <td>${row.est}</td>
       <td>${row.concepto}</td>
       <td>${baseAplicada}</td>
-      <td>${row.pct}%</td>
+      <td>${row.pct.toFixed(2)}%</td>
       <td>${sign} RD$ ${formatearMonto(row.monto)}</td>
     `;
     tablaDescuentosBody.appendChild(tr);
   });
 
-  // 5.5 Totales
+  // Totales
   const totalDiff = finalSum - baseSum;
   let signDiff = "";
   if (totalDiff < 0) signDiff = "-";
@@ -258,13 +306,13 @@ form.addEventListener("submit", (e) => {
   spanTotalDescuentos.textContent = `${signDiff} RD$ ${formatearMonto(Math.abs(totalDiff))}`;
   spanTotalACobrar.textContent = `RD$ ${formatearMonto(finalSum)}`;
 
-  // 5.6 Generar cuotas
+  // Generar cuotas (Acuerdo de Pago)
   generateAutomaticPlan(planPago, finalSum);
 
-  // 5.7 Mostrar en Recibo
+  // Actualizar Recibo
   spanFechaEmision.textContent = fechaE;
   spanFechaVencimiento.textContent = fechaV;
-  spanAnioEscolar.textContent = anioEscolar;
+  spanAnioEscolar.textContent = anioSelect;
   spanFamilia.textContent = familia;
   spanPlanSeleccionado.textContent = planPago;
 
@@ -273,7 +321,7 @@ form.addEventListener("submit", (e) => {
 });
 
 //-------------------------------------------------------------------
-// 6. GENERAR PLAN (cuotas) 
+// 6. Generar Cuotas (Plan)
 //-------------------------------------------------------------------
 function generateAutomaticPlan(plan, totalAPagar) {
   tablaAcuerdoBody.innerHTML = "";
@@ -327,14 +375,20 @@ function generateAutomaticPlan(plan, totalAPagar) {
 }
 
 //-------------------------------------------------------------------
-// 7. GENERAR PDF 
+// 7. Generar PDF
 //-------------------------------------------------------------------
 document.getElementById("btnGenerarPDF").addEventListener("click", () => {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'pt',
+    format: 'letter'
+  });
+
   const reciboElement = document.getElementById("recibo-container");
 
-  // Basta con .then(...) sin useCORS, si el logo está local y se sirve por el mismo dominio
+  // Si la imagen "images/logosmp.png" se sirve localmente 
+  // con un servidor (ej. http://localhost:3000/), no necesitas useCORS
   html2canvas(reciboElement, { scale: 2 })
     .then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
@@ -349,7 +403,7 @@ document.getElementById("btnGenerarPDF").addEventListener("click", () => {
     })
     .catch((err) => {
       console.error("Error al generar PDF:", err);
-      alert("Ocurrió un error al generar el PDF.");
+      alert("Ocurrió un error al generar el PDF. Revisa la consola.");
     });
 });
 

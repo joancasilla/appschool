@@ -1,189 +1,188 @@
-/* Fondo degradado estático y suave */
+/* Ejemplo de fondo suave + blur + bordes */
+/* Ajustamos la X de eliminar estudiante a color rojo medio rosado (#ff6995) */
 html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-  }
-  body {
-    font-family: "Helvetica", Arial, sans-serif;
-    /* Degradado suave con colores: un amarillo claro, un azul suave, un verde suave */
-    background: linear-gradient(to bottom right, #fdf3c1, #c2d9f0, #cce3d3);
-    background-attachment: fixed; /* que no se mueva con scroll */
-  }
-  
-  /* Contenedor principal */
-  .container {
-    max-width: 900px;
-    margin: 20px auto;
-    padding: 20px;
-  }
-  
-  /* Contenedores con blur + borde 1px */
-  .form-section,
-  .recibo-container {
-    background: rgba(255,255,255,0.5);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid #666;
-    border-radius: 5px;
-    padding: 20px 30px;
-    margin-bottom: 20px;
-  }
-  
-  /* Títulos y subtítulos */
-  .form-section h2,
-  .descuentos-cargos h2,
-  .acuerdo-pago h2 {
-    color: #003f87;
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-  
-  .form-section h3 {
-    color: #003f87;
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  /* Form groups */
-  .form-group {
-    margin-bottom: 1rem;
-    display: flex;
-    flex-direction: column;
-  }
-  .form-group label {
-    margin-bottom: 0.3rem;
-    font-weight: 600;
-    color: #333;
-  }
-  .form-group input,
-  .form-group select {
-    padding: 0.5rem;
-    border: 1px solid #bbb;
-    border-radius: 4px;
-    font-size: 1rem;
-  }
-  
-  /* Botones */
-  button[type="submit"],
-  button[type="button"],
-  .pdf-button {
-    background: #003f87;
-    color: #fff;
-    padding: 0.7rem 1.2rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    max-width: 250px;
-    margin-top: 5px;
-    font-weight: 600;
-  }
-  button:hover,
-  .pdf-button:hover {
-    background: #002b5c;
-  }
-  
-  /* Filas de estudiantes, descuentos */
-  .student-row,
-  .discount-row {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-  .student-row select,
-  .discount-row select {
-    flex: 1;
-  }
-  .discount-row input {
-    flex: 1;
-  }
-  
-  /* Encabezado del recibo */
-  .recibo-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  .header-left {
-    display: flex;
-    align-items: center;
-  }
-  .logo-colegio {
-    width: 250px;
-    height: auto;
-    margin-right: 10px;
-  }
-  .header-right {
-    text-align: right;
-  }
-  
-  /* Título principal */
-  h1 {
-    font-size: 1.4rem;
-    margin-bottom: 5px;
-    color: #003f87;
-    border-bottom: 2px solid #003f87;
-    display: inline-block;
-    padding-bottom: 0.3rem;
-  }
-  
-  /* Año escolar */
-  .anio-escolar {
-    font-size: 1rem;
-    margin-bottom: 20px;
-    color: #555;
-  }
-  
-  /* Datos principales */
-  .datos-principales {
-    font-size: 1rem;
-    margin-bottom: 20px;
-    color: #333;
-  }
-  .datos-principales div {
-    margin: 5px 0;
-  }
-  
-  /* Tabla Descuentos/Cargos */
-  .descuentos-cargos table,
-  .acuerdo-pago table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 10px;
-    font-size: 0.95rem;
-  }
-  .descuentos-cargos table th,
-  .descuentos-cargos table td,
-  .acuerdo-pago table th,
-  .acuerdo-pago table td {
-    border: 1px solid #ccc;
-    padding: 8px;
-    text-align: left;
-  }
-  
-  .separator {
-    border: none;
-    height: 1px;
-    background: #bbb;
-    margin: 10px 0;
-  }
-  
-  /* Totales */
-  .totales-descuentos,
-  .totales-pago {
-    text-align: right;
-    margin-top: 10px;
-  }
-  .totales-descuentos div,
-  .totales-pago div {
-    margin: 5px 0;
-    font-size: 1rem;
-    font-weight: 600;
-  }
-  
-  /* Botón PDF */
-  .acciones {
-    text-align: center;
-  }
-  
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+body {
+  font-family: "Helvetica", Arial, sans-serif;
+  background: linear-gradient(to bottom right, #fdf3c1, #c2d9f0, #cce3d3);
+  background-attachment: fixed;
+}
+
+.container {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+.form-section,
+.recibo-container {
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid #666;
+  border-radius: 5px;
+  padding: 20px 30px;
+  margin-bottom: 20px;
+}
+
+.form-section h2,
+.descuentos-cargos h2,
+.acuerdo-pago h2 {
+  color: #003f87;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.form-section h3 {
+  color: #003f87;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+.form-group label {
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+  color: #333;
+}
+.form-group input,
+.form-group select {
+  padding: 0.5rem;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+/* Botones */
+button[type="submit"],
+button[type="button"],
+.pdf-button {
+  background: #003f87;
+  color: #fff;
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  max-width: 250px;
+  margin-top: 5px;
+  font-weight: 600;
+}
+button:hover,
+.pdf-button:hover {
+  background: #002b5c;
+}
+
+/* Filas de estudiantes, descuentos */
+.student-row,
+.discount-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.student-row select,
+.discount-row select {
+  flex: 1;
+}
+.discount-row input {
+  flex: 1;
+}
+
+/* Ajuste de color para la "X" de eliminar */
+.btnRemoveStudent,
+.discount-row .btnRemove {
+  color: #ff6995; /* Rojo medio rosado */
+  font-weight: bold;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Encabezado */
+.recibo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+}
+.logo-colegio {
+  width: 250px;
+  height: auto;
+  margin-right: 10px;
+}
+.header-right {
+  text-align: right;
+}
+
+h1 {
+  font-size: 1.4rem;
+  margin-bottom: 5px;
+  color: #003f87;
+  border-bottom: 2px solid #003f87;
+  display: inline-block;
+  padding-bottom: 0.3rem;
+}
+
+.anio-escolar {
+  font-size: 1rem;
+  margin-bottom: 20px;
+  color: #555;
+}
+.datos-principales {
+  font-size: 1rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+.datos-principales div {
+  margin: 5px 0;
+}
+
+.descuentos-cargos table,
+.acuerdo-pago table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+.descuentos-cargos table th,
+.descuentos-cargos table td,
+.acuerdo-pago table th,
+.acuerdo-pago table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+.separator {
+  border: none;
+  height: 1px;
+  background: #bbb;
+  margin: 10px 0;
+}
+
+.totales-descuentos,
+.totales-pago {
+  text-align: right;
+  margin-top: 10px;
+}
+.totales-descuentos div,
+.totales-pago div {
+  margin: 5px 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Botón PDF */
+.acciones {
+  text-align: center;
+}

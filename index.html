@@ -15,19 +15,25 @@
   
   <!-- 1. FORMULARIO PRINCIPAL -->
   <section class="form-section">
-    <h2>Llenar Datos de Colegiatura</h2>
+    <h2>Calcular Colegiatura</h2>
     <form id="colegiaturaForm">
 
       <!-- Familia -->
       <div class="form-group">
         <label for="inputFamilia">Familia:</label>
-        <input type="text" id="inputFamilia" placeholder="Ej. CASILLA DE LOS SANTOS" required>
+        <input type="text" id="inputFamilia" placeholder="Ej. RODRIGUEZ PEREZ" required>
       </div>
 
-      <!-- Año Escolar -->
+      <!-- Selección de Año Escolar -->
       <div class="form-group">
-        <label for="inputAnioEscolar">Año Escolar:</label>
-        <input type="text" id="inputAnioEscolar" placeholder="2024 - 2025" required>
+        <label for="selectAnioEscolar">Año Escolar:</label>
+        <select id="selectAnioEscolar" required>
+          <option value="" disabled selected>Seleccione una opción</option>
+          <option value="2022-2023">Estudiantes inscritos en el año escolar 2022 - 2023</option>
+          <option value="2023-2024">Estudiantes inscritos en el año escolar 2023 - 2024</option>
+          <option value="2024-2025">Estudiantes inscritos en el año escolar 2024 - 2025</option>
+          <option value="2025-2026">Estudiantes de nuevo ingreso para el año escolar 2025 - 2026</option>
+        </select>
       </div>
 
       <!-- Fechas -->
@@ -64,7 +70,7 @@
 
       <hr />
       <h3>Descuentos / Cargos (manuales)</h3>
-      <p>Selecciona a qué estudiante se aplica. Usa porcentaje negativo (-10) para descuento, positivo (+5) para cargo.</p>
+      <p>Selecciona a qué estudiante se aplica. Usa porcentaje negativo (-10) p/descuento, positivo (+5) p/cargo.</p>
       <div id="discountContainer">
         <!-- Descuentos/Cargos manuales -->
       </div>
@@ -84,7 +90,6 @@
     <!-- Encabezado (logo local + fechas) -->
     <header class="recibo-header">
       <div class="header-left">
-        <!-- Imagen tomada de carpeta local "images/logosmp.png" -->
         <img
           src="images/logosmp.png"
           alt="Logo del Colegio"
@@ -106,7 +111,7 @@
       <div><strong>PLAN DE PAGO:</strong> <span id="planSeleccionado"></span></div>
     </section>
 
-    <!-- Sección Descuentos y Cargos (familiares, manuales, plan) -->
+    <!-- Sección Descuentos y Cargos -->
     <section class="descuentos-cargos">
       <h2>DETALLE DE CARGOS / DESCUENTOS</h2>
       <table>
