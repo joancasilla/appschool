@@ -513,27 +513,28 @@ form.addEventListener("submit", (e) => {
 });
 
 //-------------------------------------------------------------------
-// 9. Generar PDF con doc.html (texto real, multipágina)
+// 9. Generar PDF con doc.html (tamaño A4 y multipágina)
 //-------------------------------------------------------------------
 document.getElementById("btnGenerarPDF").addEventListener("click", () => {
   const { jsPDF } = window.jspdf;
 
+  // Cambios para A4 y unidad en px
   const doc = new jsPDF({
     orientation: 'portrait',
-    unit: 'pt',
-    format: 'letter'
+    unit: 'px', 
+    format: 'a4'
   });
 
   const reciboElement = document.getElementById("recibo-container");
 
-  // Generar PDF con doc.html
   doc.html(reciboElement, {
     x: 20,
     y: 20,
+    // Forzamos un ancho de ~550 px para que encaje en el A4 (595 px de ancho total aprox.)
+    width: 550,
     html2canvas: {
-      // Ajusta scale si necesitas que el contenido
-      // quepa más en la página o se vea más grande
-      scale: 0.9
+      // Ajusta el scale según tu preferencia
+      scale: 0.45
     },
     callback: function (doc) {
       doc.save('informacion_colegiatura.pdf');

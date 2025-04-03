@@ -6,11 +6,15 @@
   <title>Información de Colegiatura</title>
   <link rel="stylesheet" href="styles.css">
 
+  <!-- Importar html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
   <!-- Carga de jsPDF (versión >= 2.0.0). Ya incluye doc.html -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-  <!-- NOTA: Ya NO cargamos manualmente html2canvas.min.js, 
-       pues doc.html se encargará de usar la suya internamente (o desde la CDN). -->
+  <!-- Importar jsPDF con soporte para doc.html() -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 </head>
 <body>
 
