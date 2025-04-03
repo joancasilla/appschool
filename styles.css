@@ -1,5 +1,3 @@
-/* Ejemplo de fondo suave + blur + bordes */
-/* Ajustamos la X de eliminar estudiante a color rojo medio rosado (#ff6995) */
 html, body {
   margin: 0;
   padding: 0;
@@ -9,6 +7,7 @@ body {
   font-family: "Helvetica", Arial, sans-serif;
   background: linear-gradient(to bottom right, #fdf3c1, #c2d9f0, #cce3d3);
   background-attachment: fixed;
+  color: #333;
 }
 
 .container {
@@ -19,17 +18,19 @@ body {
 
 .form-section,
 .recibo-container {
-  background: rgba(255,255,255,0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid #666;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid #aaa;
   border-radius: 5px;
   padding: 20px 30px;
   margin-bottom: 20px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.15);
 }
 
 .form-section h2,
 .descuentos-cargos h2,
+.programas-adicionales h2,
 .acuerdo-pago h2 {
   color: #003f87;
   font-weight: 700;
@@ -79,32 +80,36 @@ button:hover,
   background: #002b5c;
 }
 
-/* Filas de estudiantes, descuentos */
+/* Filas de estudiantes, descuentos, programas */
 .student-row,
-.discount-row {
+.discount-row,
+.extra-program-row {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
 }
 .student-row select,
-.discount-row select {
+.discount-row select,
+.extra-program-row select,
+.extra-program-row input {
   flex: 1;
 }
 .discount-row input {
-  flex: 1;
+  flex: 2;
 }
 
 /* Ajuste de color para la "X" de eliminar */
 .btnRemoveStudent,
-.discount-row .btnRemove {
-  color: #ff6995; /* Rojo medio rosado */
+.discount-row .btnRemove,
+.extra-program-row .btnRemove {
+  color: #ff6995;
   font-weight: bold;
   border: none;
   background: transparent;
   cursor: pointer;
 }
 
-/* Encabezado */
+/* Encabezado del recibo */
 .recibo-header {
   display: flex;
   justify-content: space-between;
@@ -116,7 +121,7 @@ button:hover,
   align-items: center;
 }
 .logo-colegio {
-  width: 250px;
+  width: 200px;
   height: auto;
   margin-right: 10px;
 }
@@ -124,6 +129,7 @@ button:hover,
   text-align: right;
 }
 
+/* Título principal */
 h1 {
   font-size: 1.4rem;
   margin-bottom: 5px;
@@ -147,7 +153,9 @@ h1 {
   margin: 5px 0;
 }
 
+/* Tablas */
 .descuentos-cargos table,
+.programas-adicionales table,
 .acuerdo-pago table {
   width: 100%;
   border-collapse: collapse;
@@ -156,6 +164,8 @@ h1 {
 }
 .descuentos-cargos table th,
 .descuentos-cargos table td,
+.programas-adicionales table th,
+.programas-adicionales table td,
 .acuerdo-pago table th,
 .acuerdo-pago table td {
   border: 1px solid #ccc;
@@ -171,11 +181,13 @@ h1 {
 }
 
 .totales-descuentos,
+.totales-extras,
 .totales-pago {
   text-align: right;
   margin-top: 10px;
 }
 .totales-descuentos div,
+.totales-extras div,
 .totales-pago div {
   margin: 5px 0;
   font-size: 1rem;
@@ -185,4 +197,20 @@ h1 {
 /* Botón PDF */
 .acciones {
   text-align: center;
+}
+
+/* Ajuste responsivo */
+@media (max-width: 600px) {
+  .student-row,
+  .discount-row,
+  .extra-program-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  button[type="submit"],
+  button[type="button"],
+  .pdf-button {
+    width: 100%;
+    max-width: 100%;
+  }
 }

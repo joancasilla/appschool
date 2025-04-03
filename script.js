@@ -7,11 +7,6 @@ const colegiaturaBase = {
   "Secundaria": 132960.13
 };
 
-/*
-  MONTOS FINALES EXACTOS tras el "Descuento Año Escolar".
-  Usaremos estos valores para forzar costSoFar a ese EXACT final
-  si no es 2025-2026 => 0% => sin descuento => final = base
-*/
 const yearFinal = {
   "2022-2023": {
     "Inicial": 65017.26,
@@ -29,29 +24,83 @@ const yearFinal = {
     "Secundaria": 112250.00
   },
   "2025-2026": {
-    // sin descuento => final=base => discount=0
     "Inicial": null,
     "Primaria": null,
     "Secundaria": null
   }
 };
 
-// Descuento Familiar (orden)
 const familyDiscounts = [0, 5, 10, 15, 25];
 
-// Descuento por Plan
+//-------------------------------------------------------------------
+// 1. FUNCIONES PLAN COLEGIATURA
+//-------------------------------------------------------------------
 function getPlanDiscountPct(plan) {
-  if (plan.includes("Plan B")) return 8;
-  if (plan.includes("Plan C")) return 16;
+  if (plan.includes("Plan B")) return 8;   // B => 8%
+  if (plan.includes("Plan C")) return 16;  // C => 16%
   return 0; // Plan A => 0
 }
 
+// Distribuye la colegiatura según el plan
+function distributeColegiatura(planName, total) {
+  let rows = [];
+
+  if (planName === "Plan A - 10 pagos") {
+    const cuotaInicial = total * 0.16;
+    const restante = total - cuotaInicial;
+    const cuotaMensual = restante / 10;
+    rows.push({ concepto: "Cuota Inicial (16%)", colegiatura: cuotaInicial });
+    for (let i = 1; i <= 10; i++) {
+      rows.push({ concepto: `Cuota ${i}`, colegiatura: cuotaMensual });
+    }
+  }
+  else if (planName === "Plan A - 11 pagos") {
+    const cuotaInicial = total * 0.16;
+    const restante = total - cuotaInicial;
+    const cuotaMensual = restante / 11;
+    rows.push({ concepto: "Cuota Inicial (16%)", colegiatura: cuotaInicial });
+    for (let i = 1; i <= 11; i++) {
+      rows.push({ concepto: `Cuota ${i}`, colegiatura: cuotaMensual });
+    }
+  }
+  else if (planName === "Plan B - 2 pagos") {
+    const cuotaInicial = total * 0.55;
+    const restante = total - cuotaInicial;
+    rows.push({ concepto: "Cuota Inicial (55%)", colegiatura: cuotaInicial });
+    rows.push({ concepto: "Cuota Final (45%)", colegiatura: restante });
+  }
+  else if (planName === "Plan C - 1 pago") {
+    rows.push({ concepto: "Cuota Única (100%)", colegiatura: total });
+  }
+
+  return rows;
+}
+
 //-------------------------------------------------------------------
-// 1. REFERENCIAS AL DOM
+// 2. FUNCIONES PARA DISTRIBUIR CARGOS ADICIONALES
+//-------------------------------------------------------------------
+function distributeExtraCost(distributionType, totalCost) {
+  const dist = [];
+  const d = parseInt(distributionType, 10) || 1;
+  if (d === 1) {
+    // 100% en la primera cuota
+    dist.push(totalCost);
+  } else {
+    const each = totalCost / d;
+    for (let i = 0; i < d; i++) {
+      dist.push(each);
+    }
+  }
+  return dist;
+}
+
+//-------------------------------------------------------------------
+// 3. REFERENCIAS AL DOM
 //-------------------------------------------------------------------
 const form = document.getElementById("colegiaturaForm");
 const studentContainer = document.getElementById("studentContainer");
 const discountContainer = document.getElementById("discountContainer");
+const extraProgramsContainer = document.getElementById("extraProgramsContainer");
 
 const reciboContainer = document.getElementById("recibo-container");
 const accionesPDF = document.getElementById("accionesPDF");
@@ -66,12 +115,15 @@ const tablaDescuentosBody = document.getElementById("tablaDescuentos");
 const spanTotalDescuentos = document.getElementById("totalDescuentos");
 const spanTotalACobrar = document.getElementById("totalACobrar");
 
+const tablaProgramasAdicionalesBody = document.getElementById("tablaProgramasAdicionales");
+const spanTotalExtras = document.getElementById("totalExtras");
+
 const tablaAcuerdoBody = document.getElementById("tablaAcuerdo");
 const spanTotalAPagar = document.getElementById("totalAPagar");
 const spanTotalPagado = document.getElementById("totalPagado");
 
 //-------------------------------------------------------------------
-// 2. FECHAS POR DEFECTO
+// 4. FECHAS POR DEFECTO
 //-------------------------------------------------------------------
 window.addEventListener("DOMContentLoaded", () => {
   const today = new Date();
@@ -83,7 +135,7 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 //-------------------------------------------------------------------
-// 3. AGREGAR / ELIMINAR ESTUDIANTE
+// 5. AGREGAR / ELIMINAR ESTUDIANTE
 //-------------------------------------------------------------------
 let students = [];
 
@@ -135,7 +187,7 @@ function removeStudent(studentId) {
 }
 
 //-------------------------------------------------------------------
-// 4. AÑADIR DESCUENTO/CARGO MANUAL
+// 6. AÑADIR DESCUENTO/CARGO MANUAL (Colegiatura)
 //-------------------------------------------------------------------
 document.getElementById("btnAddDiscount").addEventListener("click", () => {
   const div = document.createElement("div");
@@ -161,7 +213,62 @@ document.getElementById("btnAddDiscount").addEventListener("click", () => {
 });
 
 //-------------------------------------------------------------------
-// 5. AL ENVIAR FORM => CÁLCULOS
+// 7. PROGRAMAS ADICIONALES (ligados a un estudiante, con distribución)
+//-------------------------------------------------------------------
+let extraPrograms = [];
+
+document.getElementById("btnAddExtraProgram").addEventListener("click", () => {
+  const div = document.createElement("div");
+  div.classList.add("extra-program-row");
+
+  const id = Date.now();
+
+  // Preparamos un select para los estudiantes
+  let studentOptions = "";
+  students.forEach((st, idx) => {
+    const numEst = idx + 1;
+    studentOptions += `<option value="${numEst}">Est. ${numEst}</option>`;
+  });
+  if (!studentOptions) {
+    // Si no hay estudiantes, igual permitimos, pero a "Est. 1" ficticio
+    studentOptions = `<option value="1">Est. 1</option>`;
+  }
+
+  // Select para distribución (1, 2 o 10 cuotas)
+  div.innerHTML = `
+    <select class="extra-student">
+      ${studentOptions}
+    </select>
+    <input type="text" placeholder="Nombre del Programa (ej: AFTERSCHOOL)" class="program-name" />
+    <input type="number" step="0.01" placeholder="Monto (RD$)" class="program-cost" />
+    <select class="program-dist">
+      <option value="1" selected>Distribuir en 1 cuota</option>
+      <option value="2">Distribuir en 2 cuotas</option>
+      <option value="10">Distribuir en 10 cuotas</option>
+    </select>
+    <button type="button" class="btnRemove">X</button>
+  `;
+
+  const btnRemove = div.querySelector(".btnRemove");
+  btnRemove.addEventListener("click", () => {
+    extraProgramsContainer.removeChild(div);
+    extraPrograms = extraPrograms.filter(ep => ep.id !== id);
+  });
+
+  extraProgramsContainer.appendChild(div);
+
+  extraPrograms.push({
+    id,
+    rowElement: div,
+    studentSelect: div.querySelector(".extra-student"),
+    programNameInput: div.querySelector(".program-name"),
+    programCostInput: div.querySelector(".program-cost"),
+    distributionSelect: div.querySelector(".program-dist")
+  });
+});
+
+//-------------------------------------------------------------------
+// 8. AL ENVIAR FORM => CÁLCULOS
 //-------------------------------------------------------------------
 form.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -173,42 +280,43 @@ form.addEventListener("submit", (e) => {
   const fechaV = document.getElementById("inputFechaVencimiento").value.trim();
   const planPago = document.getElementById("selectPlan").value;
 
+  // Limpiar tablas previas
   tablaDescuentosBody.innerHTML = "";
+  tablaProgramasAdicionalesBody.innerHTML = "";
+  tablaAcuerdoBody.innerHTML = "";
 
-  let baseSum = 0;  // suma de bases totales (para comparar)
-  let finalSum = 0; // suma final tras descuentos
+  let baseSum = 0;  // suma de bases totales (colegiatura "plena")
+  let finalSum = 0; // suma final tras descuentos (colegiatura neta)
   const discountRowsGlobal = [];
 
-  // Plan B=8%, Plan C=16%, A=0
+  // 8.1. % Descuento Plan
   const planDiscount = getPlanDiscountPct(planPago);
 
+  // -----------------------------------------------------------------
+  // A) Calcular la COLEGIATURA por cada estudiante
+  // -----------------------------------------------------------------
   students.forEach((st, index) => {
     const nivel = st.selectNivel.value;
     const base = colegiaturaBase[nivel];
 
-    // (1) Cargo Colegiatura Base
+    // (1) Cargo Colegiatura Base => 100%
     let costSoFar = 0;
-    costSoFar += base;
     discountRowsGlobal.push({
       est: index + 1,
       concepto: `Cargo Colegiatura Base (${nivel})`,
-      base: null, // se mostrará “—”
-      pct: 0,
+      base: base,
+      pct: 100,
       monto: base
     });
+    costSoFar += base;
     baseSum += base;
 
     // (2) Descuento Año Escolar EXACTO
-    // Si anioSelect es “2025-2026”, no hay descuento => final= base
-    // De lo contrario, tomamos yearFinal[anioSelect][nivel] => "montoFinal"
     const finalAnio = yearFinal[anioSelect]?.[nivel];
     if (finalAnio !== null && finalAnio !== undefined) {
-      // Hacemos: discount = costSoFar - finalAnio
-      // Y forzamos costSoFar = finalAnio
       const descAnio = costSoFar - finalAnio;
       if (descAnio > 0) {
-        // Solo aplicamos si finalAnio < costSoFar
-        const pctAnio = (descAnio / costSoFar) * 100; // para mostrar en la tabla
+        const pctAnio = (descAnio / costSoFar) * 100;
         discountRowsGlobal.push({
           est: index + 1,
           concepto: `Descuento Año Escolar (${anioSelect})`,
@@ -219,14 +327,13 @@ form.addEventListener("submit", (e) => {
         costSoFar = finalAnio;
       }
     }
-    // si finalAnio es null => no hay descuento => costSoFar = base (sin cambio)
 
     // (3) Descuento Plan
     if (planDiscount > 0) {
       const descPlan = costSoFar * (planDiscount / 100);
       discountRowsGlobal.push({
         est: index + 1,
-        concepto: `Descuento por plan de pago - ${planPago}`,
+        concepto: `Descuento por plan (${planPago})`,
         base: costSoFar,
         pct: -planDiscount,
         monto: descPlan
@@ -275,17 +382,13 @@ form.addEventListener("submit", (e) => {
     finalSum += costSoFar;
   });
 
-  // Mostrar filas en la tabla
+  // Mostrar filas de COLEGIATURA en la tabla
   discountRowsGlobal.forEach((row) => {
     let sign = "";
     if (row.pct < 0) sign = "-";
     else if (row.pct > 0) sign = "+";
 
-    // Si base=null => "—"
-    const baseAplicada = row.base === null
-      ? "—"
-      : "RD$ " + formatearMonto(row.base);
-
+    const baseAplicada = "RD$ " + formatearMonto(row.base);
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${row.est}</td>
@@ -297,7 +400,7 @@ form.addEventListener("submit", (e) => {
     tablaDescuentosBody.appendChild(tr);
   });
 
-  // Totales
+  // Totales de COLEGIATURA
   const totalDiff = finalSum - baseSum;
   let signDiff = "";
   if (totalDiff < 0) signDiff = "-";
@@ -306,10 +409,99 @@ form.addEventListener("submit", (e) => {
   spanTotalDescuentos.textContent = `${signDiff} RD$ ${formatearMonto(Math.abs(totalDiff))}`;
   spanTotalACobrar.textContent = `RD$ ${formatearMonto(finalSum)}`;
 
-  // Generar cuotas (Acuerdo de Pago)
-  generateAutomaticPlan(planPago, finalSum);
+  // -----------------------------------------------------------------
+  // B) Calcular PROGRAMAS ADICIONALES
+  // -----------------------------------------------------------------
+  let totalExtras = 0;
+  let extraDistributions = []; // [ { student, name, distArray: [m1, m2,...] }, ...]
 
-  // Actualizar Recibo
+  extraPrograms.forEach((ep) => {
+    const studentNum = parseInt(ep.studentSelect.value) || 1;
+    const name = ep.programNameInput.value.trim() || "Programa";
+    const cost = parseFloat(ep.programCostInput.value) || 0;
+    const distType = ep.distributionSelect.value; // "1","2","10"
+
+    totalExtras += cost;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${studentNum}</td>
+      <td>${name}</td>
+      <td>${distType} cuota(s)</td>
+      <td>RD$ ${formatearMonto(cost)}</td>
+    `;
+    tablaProgramasAdicionalesBody.appendChild(tr);
+
+    const distArray = distributeExtraCost(distType, cost);
+    extraDistributions.push({
+      student: studentNum,
+      name,
+      distArray
+    });
+  });
+
+  spanTotalExtras.textContent = `RD$ ${formatearMonto(totalExtras)}`;
+
+  // -----------------------------------------------------------------
+  // C) Generar tabla ACUERDO DE PAGO
+  // -----------------------------------------------------------------
+  // 1) Distribución COLEGIATURA
+  const colegRows = distributeColegiatura(planPago, finalSum);
+  let mainPlanLength = colegRows.length;
+
+  // 2) Profundidad de Extras
+  let maxExtraInstallments = 0;
+  extraDistributions.forEach((ed) => {
+    if (ed.distArray.length > maxExtraInstallments) {
+      maxExtraInstallments = ed.distArray.length;
+    }
+  });
+
+  // 3) Filas totales => max(mainPlanLength, maxExtraInstallments)
+  let totalRows = Math.max(mainPlanLength, maxExtraInstallments);
+
+  let finalInstallments = [];
+  for (let i = 0; i < totalRows; i++) {
+    let colegObj = colegRows[i];
+    let concepto = colegObj ? colegObj.concepto : `Cuota ${i + 1} (Sin Colegiatura)`;
+    let colegAmount = colegObj ? colegObj.colegiatura : 0;
+
+    let extraAmount = 0;
+    extraDistributions.forEach((ed) => {
+      if (ed.distArray[i] !== undefined) {
+        extraAmount += ed.distArray[i];
+      }
+    });
+
+    let totalCuota = colegAmount + extraAmount;
+    finalInstallments.push({
+      concepto,
+      colegiatura: colegAmount,
+      cargos: extraAmount,
+      totalCuota
+    });
+  }
+
+  let sumPagar = 0;
+  finalInstallments.forEach((inst) => {
+    sumPagar += inst.totalCuota;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${inst.concepto}</td>
+      <td>RD$ ${formatearMonto(inst.colegiatura)}</td>
+      <td>RD$ ${formatearMonto(inst.cargos)}</td>
+      <td>RD$ ${formatearMonto(inst.totalCuota)}</td>
+      <td>RD$ 0.00</td>
+    `;
+    tablaAcuerdoBody.appendChild(tr);
+  });
+
+  spanTotalAPagar.textContent = `RD$ ${formatearMonto(sumPagar)}`;
+  spanTotalPagado.textContent = `RD$ 0.00`;
+
+  // -----------------------------------------------------------------
+  // D) Mostrar vista previa
+  // -----------------------------------------------------------------
   spanFechaEmision.textContent = fechaE;
   spanFechaVencimiento.textContent = fechaV;
   spanAnioEscolar.textContent = anioSelect;
@@ -321,64 +513,11 @@ form.addEventListener("submit", (e) => {
 });
 
 //-------------------------------------------------------------------
-// 6. Generar Cuotas (Plan)
-//-------------------------------------------------------------------
-function generateAutomaticPlan(plan, totalAPagar) {
-  tablaAcuerdoBody.innerHTML = "";
-
-  let rows = [];
-
-  if (plan === "Plan A - 10 pagos") {
-    const cuotaInicial = totalAPagar * 0.16;
-    const restante = totalAPagar - cuotaInicial;
-    const cuotaMensual = restante / 10;
-
-    rows.push({ concepto: "Cuota Inicial (16%)", montoPagar: cuotaInicial });
-    for (let i = 1; i <= 10; i++) {
-      rows.push({ concepto: `Cuota ${i}`, montoPagar: cuotaMensual });
-    }
-  }
-  else if (plan === "Plan A - 11 pagos") {
-    const cuotaInicial = totalAPagar * 0.16;
-    const restante = totalAPagar - cuotaInicial;
-    const cuotaMensual = restante / 11;
-
-    rows.push({ concepto: "Cuota Inicial (16%)", montoPagar: cuotaInicial });
-    for (let i = 1; i <= 11; i++) {
-      rows.push({ concepto: `Cuota ${i}`, montoPagar: cuotaMensual });
-    }
-  }
-  else if (plan === "Plan B - 2 pagos") {
-    const cuotaInicial = totalAPagar * 0.55;
-    const restante = totalAPagar - cuotaInicial;
-    rows.push({ concepto: "Cuota Inicial (55%)", montoPagar: cuotaInicial });
-    rows.push({ concepto: "Cuota Final", montoPagar: restante });
-  }
-  else if (plan === "Plan C - 1 pago") {
-    rows.push({ concepto: "Cuota Única", montoPagar: totalAPagar });
-  }
-
-  let sumPagar = 0;
-  rows.forEach((r) => {
-    sumPagar += r.montoPagar;
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${r.concepto}</td>
-      <td>RD$ ${formatearMonto(r.montoPagar)}</td>
-      <td>RD$ 0.00</td>
-    `;
-    tablaAcuerdoBody.appendChild(tr);
-  });
-
-  spanTotalAPagar.textContent = `RD$ ${formatearMonto(sumPagar)}`;
-  spanTotalPagado.textContent = `RD$ 0.00`;
-}
-
-//-------------------------------------------------------------------
-// 7. Generar PDF
+// 9. Generar PDF con doc.html (texto real, multipágina)
 //-------------------------------------------------------------------
 document.getElementById("btnGenerarPDF").addEventListener("click", () => {
   const { jsPDF } = window.jspdf;
+
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'pt',
@@ -387,24 +526,19 @@ document.getElementById("btnGenerarPDF").addEventListener("click", () => {
 
   const reciboElement = document.getElementById("recibo-container");
 
-  // Si la imagen "images/logosmp.png" se sirve localmente 
-  // con un servidor (ej. http://localhost:3000/), no necesitas useCORS
-  html2canvas(reciboElement, { scale: 2 })
-    .then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const imgProps = doc.getImageProperties(imgData);
-
-      const pdfWidth = pageWidth - 40;
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-      doc.addImage(imgData, 'PNG', 20, 20, pdfWidth, pdfHeight);
+  // Generar PDF con doc.html
+  doc.html(reciboElement, {
+    x: 20,
+    y: 20,
+    html2canvas: {
+      // Ajusta scale si necesitas que el contenido
+      // quepa más en la página o se vea más grande
+      scale: 0.9
+    },
+    callback: function (doc) {
       doc.save('informacion_colegiatura.pdf');
-    })
-    .catch((err) => {
-      console.error("Error al generar PDF:", err);
-      alert("Ocurrió un error al generar el PDF. Revisa la consola.");
-    });
+    }
+  });
 });
 
 //-------------------------------------------------------------------

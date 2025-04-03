@@ -5,9 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Información de Colegiatura</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- jsPDF y html2canvas (para exportar a PDF) -->
+
+  <!-- Carga de jsPDF (versión >= 2.0.0). Ya incluye doc.html -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- NOTA: Ya NO cargamos manualmente html2canvas.min.js, 
+       pues doc.html se encargará de usar la suya internamente (o desde la CDN). -->
 </head>
 <body>
 
@@ -46,9 +49,9 @@
         <input type="text" id="inputFechaVencimiento" required>
       </div>
 
-      <!-- Plan de Pago -->
+      <!-- Plan de Pago (para la Colegiatura) -->
       <div class="form-group">
-        <label for="selectPlan">Plan de Pago:</label>
+        <label for="selectPlan">Plan de Pago (Colegiatura):</label>
         <select id="selectPlan" required>
           <option value="" disabled selected>Seleccione un plan</option>
           <option value="Plan A - 10 pagos">Plan A - 10 pagos</option>
@@ -69,13 +72,23 @@
       </div>
 
       <hr />
-      <h3>Descuentos / Cargos (manuales)</h3>
-      <p>Selecciona a qué estudiante se aplica. Usa porcentaje negativo (-10) p/descuento, positivo (+5) p/cargo.</p>
+      <h3>Descuentos / Cargos Manuales (Colegiatura)</h3>
+      <p>Selecciona a qué estudiante se aplica. Usa un % negativo (-10) para descuento o positivo (+5) para cargo.</p>
       <div id="discountContainer">
         <!-- Descuentos/Cargos manuales -->
       </div>
       <div class="form-group">
-        <button type="button" id="btnAddDiscount">Añadir Descuento/Cargo</button>
+        <button type="button" id="btnAddDiscount">Añadir Desc./Cargo</button>
+      </div>
+
+      <hr />
+      <h3>Programas Adicionales</h3>
+      <p>Registra AFTERSCHOOL u otros programas por estudiante.</p>
+      <div id="extraProgramsContainer">
+        <!-- Cargos adicionales con su propia distribución de cuotas -->
+      </div>
+      <div class="form-group">
+        <button type="button" id="btnAddExtraProgram">Añadir Programa</button>
       </div>
 
       <!-- Botón para generar Recibo -->
@@ -108,19 +121,19 @@
     <!-- Datos principales (Familia, Plan de Pago, etc.) -->
     <section class="datos-principales">
       <div><strong>FAMILIA:</strong> <span id="nombreFamilia"></span></div>
-      <div><strong>PLAN DE PAGO:</strong> <span id="planSeleccionado"></span></div>
+      <div><strong>PLAN DE PAGO (COLEGIATURA):</strong> <span id="planSeleccionado"></span></div>
     </section>
 
-    <!-- Sección Descuentos y Cargos -->
+    <!-- Sección Descuentos y Cargos (Colegiatura) -->
     <section class="descuentos-cargos">
-      <h2>DETALLE DE CARGOS / DESCUENTOS</h2>
+      <h2>COLEGIATURA</h2>
       <table>
         <thead>
           <tr>
             <th>Est.</th>
             <th>Concepto</th>
             <th>Base Aplicada</th>
-            <th>Porcentaje</th>
+            <th>%</th>
             <th>Monto</th>
           </tr>
         </thead>
@@ -134,8 +147,30 @@
           <span id="totalDescuentos">- RD$ 0.00</span>
         </div>
         <div>
-          <strong>TOTAL A COBRAR:</strong>
+          <strong>TOTAL COLEGIATURA:</strong>
           <span id="totalACobrar">RD$ 0.00</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección Programas Adicionales -->
+    <section class="programas-adicionales">
+      <h2>PROGRAMAS ADICIONALES</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Est.</th>
+            <th>Programa</th>
+            <th>Distribución</th>
+            <th>Monto</th>
+          </tr>
+        </thead>
+        <tbody id="tablaProgramasAdicionales"></tbody>
+      </table>
+      <div class="totales-extras">
+        <div>
+          <strong>TOTAL PROGRAMAS ADICIONALES:</strong>
+          <span id="totalExtras">RD$ 0.00</span>
         </div>
       </div>
     </section>
@@ -147,7 +182,9 @@
         <thead>
           <tr>
             <th>Concepto</th>
-            <th>Monto a Pagar</th>
+            <th>Colegiatura</th>
+            <th>Cargos Adicionales</th>
+            <th>Total Cuota</th>
             <th>Monto Pagado</th>
           </tr>
         </thead>
@@ -155,11 +192,11 @@
       </table>
       <div class="totales-pago">
         <div>
-          <strong>TOTAL A PAGAR (Plan):</strong>
+          <strong>TOTAL A PAGAR:</strong>
           <span id="totalAPagar">RD$ 0.00</span>
         </div>
         <div>
-          <strong>TOTAL PAGADO (Plan):</strong>
+          <strong>TOTAL PAGADO:</strong>
           <span id="totalPagado">RD$ 0.00</span>
         </div>
       </div>
