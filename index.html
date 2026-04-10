@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Información de Colegiatura — SMP</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:  '#f0f5fc',
+              100: '#dce8f7',
+              200: '#b5ceed',
+              300: '#7eaede',
+              400: '#4a8bcb',
+              500: '#003f87',
+              600: '#003672',
+              700: '#002b5c',
+              800: '#001f42',
+              900: '#00142d',
+            }
+          },
+          fontFamily: {
+            sans: ['"Lato"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-[#f0f2f5] text-slate-700 min-h-screen">
+
+  <!-- ═══ NAVBAR ═══ -->
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-[1480px] mx-auto px-6 h-[52px] flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <img src="images/logosmp.png" alt="SMP" class="h-9 w-auto" onerror="this.style.display='none'">
+        <div class="h-5 w-px bg-slate-200"></div>
+        <h1 class="text-brand-500 text-[11px] font-black uppercase tracking-[0.25em] leading-none">Información de Colegiatura</h1>
+      </div>
+      <button id="btnGenerarPDF" class="hidden group bg-brand-500 text-white font-black text-[10px] uppercase tracking-[0.15em] px-4 py-2 rounded-md hover:bg-brand-600 transition-all active:scale-[0.97] shadow-sm">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+          Descargar PDF
+        </span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="max-w-[1480px] mx-auto px-4 sm:px-6 py-5">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+      <!-- ─── LEFT: FORM ─── -->
+      <section class="lg:col-span-5 space-y-3">
+
+        <!-- Datos Generales -->
+        <div class="bg-white rounded-lg shadow-sm border border-black/[0.06]">
+          <div class="px-4 py-2.5 border-b border-slate-100 flex items-center gap-2">
+            <div class="w-1 h-4 rounded-sm bg-brand-500"></div>
+            <h2 class="text-[10px] font-black text-slate-600 uppercase tracking-[0.15em]">Datos Generales</h2>
+          </div>
+          <div class="p-4 space-y-3">
+            <div>
+              <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-[0.12em] mb-1" for="inputFamilia">Familia</label>
+              <input type="text" id="inputFamilia" placeholder="Ej. RODRÍGUEZ PÉREZ" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-[13px] focus:ring-1 focus:ring-brand-300 focus:border-brand-400 outline-none transition-all uppercase font-bold text-slate-800 placeholder:text-slate-300 placeholder:font-normal placeholder:normal-case" required>
+            </div>
+            <div class="grid grid-cols-2 gap-2.5">
+              <div>
+                <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-[0.12em] mb-1" for="inputFechaEmision">Emisión</label>
+                <input type="date" id="inputFechaEmision" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-[13px] focus:ring-1 focus:ring-brand-300 focus:border-brand-400 outline-none transition-all text-slate-600">
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-[0.12em] mb-1" for="inputFechaVencimiento">Vencimiento</label>
+                <input type="date" id="inputFechaVencimiento" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-[13px] focus:ring-1 focus:ring-brand-300 focus:border-brand-400 outline-none transition-all text-slate-600">
+              </div>
+            </div>
+            <div>
+              <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-[0.12em] mb-1" for="selectAnioEscolar">Año de Inscripción</label>
+              <select id="selectAnioEscolar" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-[13px] focus:ring-1 focus:ring-brand-300 focus:border-brand-400 outline-none transition-all text-slate-600" required>
+                <option value="" disabled selected>Seleccione</option>
+                <option value="2022-2023">Inscritos en 2022-2023</option>
+                <option value="2023-2024">Inscritos en 2023-2024</option>
+                <option value="2024-2025">Inscritos en 2024-2025</option>
+                <option value="2025-2026">Inscritos en 2025-2026</option>
+                <option value="2026-2027">Nuevo ingreso 2026-2027</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-[0.12em] mb-1" for="selectPlan">Plan de Pago</label>
+              <select id="selectPlan" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-[13px] focus:ring-1 focus:ring-brand-300 focus:border-brand-400 outline-none transition-all text-slate-600" required>
+                <option value="" disabled selected>Seleccione</option>
+                <option value="Plan A - 10 pagos">Plan A — 10 cuotas</option>
+                <option value="Plan A - 11 pagos">Plan A — 11 cuotas</option>
+                <option value="Plan B - 2 pagos">Plan B — 2 cuotas (8% desc.)</option>
+                <option value="Plan C - 1 pago">Plan C — 1 pago (16% desc.)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estudiantes -->
+        <div class="bg-white rounded-lg shadow-sm border border-black/[0.06]">
+          <div class="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-1 h-4 rounded-sm bg-emerald-500"></div>
+              <h2 class="text-[10px] font-black text-slate-600 uppercase tracking-[0.15em]">Estudiantes</h2>
+            </div>
+            <button type="button" id="btnAddStudent" class="text-[10px] font-bold text-brand-500 hover:text-brand-700 flex items-center gap-1 transition-colors px-2 py-1 rounded hover:bg-brand-50 active:scale-95">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+              Agregar
+            </button>
+          </div>
+          <div class="p-4">
+            <p class="text-[9px] text-slate-400 mb-2.5 tracking-wide font-medium">Desc. familiar: 1° 0% · 2° 5% · 3° 10% · 4° 15% · 5° 25%</p>
+            <div id="studentContainer" class="space-y-2"></div>
+            <div id="emptyStudents" class="text-center py-6">
+              <div class="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center mx-auto mb-2">
+                <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+              </div>
+              <p class="text-[11px] text-slate-400">Presiona "Agregar" para añadir</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Descuentos -->
+        <div class="bg-white rounded-lg shadow-sm border border-black/[0.06]">
+          <div class="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-1 h-4 rounded-sm bg-amber-400"></div>
+              <h2 class="text-[10px] font-black text-slate-600 uppercase tracking-[0.15em]">Desc. / Cargos</h2>
+            </div>
+            <button type="button" id="btnAddDiscount" class="text-[10px] font-bold text-brand-500 hover:text-brand-700 flex items-center gap-1 transition-colors px-2 py-1 rounded hover:bg-brand-50 active:scale-95">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+              Añadir
+            </button>
+          </div>
+          <div class="p-4">
+            <p class="text-[9px] text-slate-400 mb-2.5 tracking-wide font-medium">Negativo (–10) = descuento · Positivo (+5) = cargo</p>
+            <div id="discountContainer" class="space-y-2"></div>
+          </div>
+        </div>
+
+        <!-- Programas -->
+        <div class="bg-white rounded-lg shadow-sm border border-black/[0.06]">
+          <div class="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-1 h-4 rounded-sm bg-violet-500"></div>
+              <h2 class="text-[10px] font-black text-slate-600 uppercase tracking-[0.15em]">Programas Adicionales</h2>
+            </div>
+            <button type="button" id="btnAddExtraProgram" class="text-[10px] font-bold text-brand-500 hover:text-brand-700 flex items-center gap-1 transition-colors px-2 py-1 rounded hover:bg-brand-50 active:scale-95">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+              Añadir
+            </button>
+          </div>
+          <div class="p-4">
+            <p class="text-[9px] text-slate-400 mb-2.5 tracking-wide font-medium">Afterschool u otros programas por estudiante</p>
+            <div id="extraProgramsContainer" class="space-y-2"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ─── RIGHT: LIVE PREVIEW ─── -->
+      <section class="lg:col-span-7 lg:sticky lg:top-16">
+        <div id="previewWrapper" class="bg-white rounded-lg shadow-sm border border-black/[0.06]">
+
+          <!-- Empty state -->
+          <div id="emptyPreview" class="flex flex-col items-center justify-center py-20 px-6">
+            <div class="w-12 h-12 rounded-full bg-brand-50 flex items-center justify-center mb-3">
+              <svg class="w-6 h-6 text-brand-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+            </div>
+            <p class="text-sm font-bold text-slate-400">Vista previa</p>
+            <p class="text-[11px] text-slate-300 mt-0.5">Completa el formulario para ver los cálculos</p>
+          </div>
+
+          <!-- Live receipt -->
+          <div id="recibo-container" class="hidden">
+            <div id="recibo-printable" class="p-5 sm:p-7">
+
+              <!-- Receipt Header -->
+              <div class="flex items-center justify-between mb-5 pb-4" style="border-bottom: 2px solid #003f87;">
+                <img src="images/logosmp.png" alt="Logo" class="h-11 w-auto" onerror="this.style.display='none'">
+                <div class="text-right space-y-0.5">
+                  <p class="text-brand-500 text-[9px] font-black uppercase tracking-[0.25em]">Información de Colegiatura</p>
+                  <div class="text-[10px] text-slate-400">
+                    <span>Emisión: <strong class="text-slate-600" id="rFechaEmision">—</strong></span>
+                    <span class="mx-1 text-slate-200">|</span>
+                    <span>Vence: <strong class="text-slate-600" id="rFechaVencimiento">—</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Meta -->
+              <div class="grid grid-cols-3 gap-2 mb-5">
+                <div class="col-span-2 bg-slate-50 rounded-md px-3 py-2.5">
+                  <p class="text-[8px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-0.5">Familia</p>
+                  <p id="rFamilia" class="font-black text-slate-800 text-[15px] leading-tight">—</p>
+                </div>
+                <div class="space-y-2">
+                  <div class="bg-slate-50 rounded-md px-3 py-2.5">
+                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-0.5">Año</p>
+                    <p id="rAnioEscolar" class="font-bold text-slate-800 text-[11px]">—</p>
+                  </div>
+                  <div class="bg-slate-50 rounded-md px-3 py-2.5">
+                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-0.5">Plan</p>
+                    <p id="rPlan" class="font-bold text-slate-800 text-[11px]">—</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- COLEGIATURA -->
+              <div class="mb-5">
+                <h3 class="text-[8px] font-black text-brand-500 uppercase tracking-[0.3em] mb-1.5 pb-1 border-b-2 border-brand-500 inline-block">Colegiatura</h3>
+                <table class="w-full text-[10px] mt-1">
+                  <thead>
+                    <tr class="text-[8px] text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                      <th class="text-left px-2 py-1.5 font-bold w-6">#</th>
+                      <th class="text-left px-2 py-1.5 font-bold">Concepto</th>
+                      <th class="text-right px-2 py-1.5 font-bold">Base</th>
+                      <th class="text-right px-2 py-1.5 font-bold w-14">%</th>
+                      <th class="text-right px-2 py-1.5 font-bold">Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tablaDescuentos"></tbody>
+                </table>
+                <div class="flex justify-end gap-6 mt-2 pt-2 border-t border-slate-100">
+                  <div class="text-right">
+                    <p class="text-[7px] text-slate-400 uppercase font-bold tracking-wider">Total Desc./Cargos</p>
+                    <p id="totalDescuentos" class="font-black text-red-500 text-[11px]">– RD$ 0.00</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-[7px] text-slate-400 uppercase font-bold tracking-wider">Total Colegiatura</p>
+                    <p id="totalACobrar" class="font-black text-slate-800 text-[13px]">RD$ 0.00</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PROGRAMAS -->
+              <div class="mb-5" id="seccionProgramas" style="display:none;">
+                <h3 class="text-[8px] font-black text-brand-500 uppercase tracking-[0.3em] mb-1.5 pb-1 border-b-2 border-brand-500 inline-block">Programas Adicionales</h3>
+                <table class="w-full text-[10px] mt-1">
+                  <thead>
+                    <tr class="text-[8px] text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                      <th class="text-left px-2 py-1.5 font-bold w-6">#</th>
+                      <th class="text-left px-2 py-1.5 font-bold">Programa</th>
+                      <th class="text-left px-2 py-1.5 font-bold">Distribución</th>
+                      <th class="text-right px-2 py-1.5 font-bold">Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tablaProgramas"></tbody>
+                </table>
+                <div class="flex justify-end mt-2 pt-2 border-t border-slate-100">
+                  <div class="text-right">
+                    <p class="text-[7px] text-slate-400 uppercase font-bold tracking-wider">Total Programas</p>
+                    <p id="totalExtras" class="font-black text-slate-800 text-[11px]">RD$ 0.00</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ACUERDO DE PAGO -->
+              <div>
+                <h3 class="text-[8px] font-black text-brand-500 uppercase tracking-[0.3em] mb-1.5 pb-1 border-b-2 border-brand-500 inline-block">Acuerdo de Pago</h3>
+                <table class="w-full text-[10px] mt-1">
+                  <thead>
+                    <tr class="text-[8px] text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                      <th class="text-left px-2 py-1.5 font-bold">Concepto</th>
+                      <th class="text-right px-2 py-1.5 font-bold">Colegiatura</th>
+                      <th class="text-right px-2 py-1.5 font-bold">Adicionales</th>
+                      <th class="text-right px-2 py-1.5 font-bold">Total Cuota</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tablaAcuerdo"></tbody>
+                </table>
+                <div class="mt-3 pt-3 flex justify-end" style="border-top: 2px solid #003f87;">
+                  <div class="text-right">
+                    <p class="text-[8px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Total a Pagar</p>
+                    <p id="totalAPagar" class="font-black text-brand-500 text-lg tracking-tight">RD$ 0.00</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
