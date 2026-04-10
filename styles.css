@@ -1,216 +1,40 @@
-html, body {
+/* styles.css — Only rules Tailwind can't cover */
+
+/* Smooth global transitions */
+input, select {
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+/* Remove number input spinners for cleaner look */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
   margin: 0;
-  padding: 0;
-  height: 100%;
 }
-body {
-  font-family: "Helvetica", Arial, sans-serif;
-  background: linear-gradient(to bottom right, #fdf3c1, #c2d9f0, #cce3d3);
-  background-attachment: fixed;
-  color: #333;
+input[type="number"] {
+  -moz-appearance: textfield;
 }
 
-.container {
-  max-width: 900px;
-  margin: 20px auto;
-  padding: 20px;
-}
-
-.form-section,
-.recibo-container {
-  background: rgba(255,255,255,0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid #aaa;
-  border-radius: 5px;
-  padding: 20px 30px;
-  margin-bottom: 20px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.15);
-}
-
-.form-section h2,
-.descuentos-cargos h2,
-.programas-adicionales h2,
-.acuerdo-pago h2 {
-  color: #003f87;
-  font-weight: 700;
-  margin-bottom: 10px;
-}
-
-.form-section h3 {
-  color: #003f87;
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-  display: flex;
-  flex-direction: column;
-}
-.form-group label {
-  margin-bottom: 0.3rem;
-  font-weight: 600;
-  color: #333;
-}
-.form-group input,
-.form-group select {
-  padding: 0.5rem;
-  border: 1px solid #bbb;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
-/* Botones */
-button[type="submit"],
-button[type="button"],
-.pdf-button {
-  background: #003f87;
-  color: #fff;
-  padding: 0.7rem 1.2rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  max-width: 250px;
-  margin-top: 5px;
-  font-weight: 600;
-}
-button:hover,
-.pdf-button:hover {
-  background: #002b5c;
-}
-
-/* Filas de estudiantes, descuentos, programas */
-.student-row,
-.discount-row,
-.extra-program-row {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-.student-row select,
-.discount-row select,
-.extra-program-row select,
-.extra-program-row input {
-  flex: 1;
-}
-.discount-row input {
-  flex: 2;
-}
-
-/* Ajuste de color para la "X" de eliminar */
-.btnRemoveStudent,
-.discount-row .btnRemove,
-.extra-program-row .btnRemove {
-  color: #ff6995;
-  font-weight: bold;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-}
-
-/* Encabezado del recibo */
-.recibo-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-.header-left {
-  display: flex;
-  align-items: center;
-}
-.logo-colegio {
-  width: 200px;
-  height: auto;
-  margin-right: 10px;
-}
-.header-right {
-  text-align: right;
-}
-
-/* Título principal */
-h1 {
-  font-size: 1.4rem;
-  margin-bottom: 5px;
-  color: #003f87;
-  border-bottom: 2px solid #003f87;
-  display: inline-block;
-  padding-bottom: 0.3rem;
-}
-
-.anio-escolar {
-  font-size: 1rem;
-  margin-bottom: 20px;
-  color: #555;
-}
-.datos-principales {
-  font-size: 1rem;
-  margin-bottom: 20px;
-  color: #333;
-}
-.datos-principales div {
-  margin: 5px 0;
-}
-
-/* Tablas */
-.descuentos-cargos table,
-.programas-adicionales table,
-.acuerdo-pago table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 10px;
-  font-size: 0.95rem;
-}
-.descuentos-cargos table th,
-.descuentos-cargos table td,
-.programas-adicionales table th,
-.programas-adicionales table td,
-.acuerdo-pago table th,
-.acuerdo-pago table td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: left;
-}
-
-.separator {
-  border: none;
-  height: 1px;
-  background: #bbb;
-  margin: 10px 0;
-}
-
-.totales-descuentos,
-.totales-extras,
-.totales-pago {
-  text-align: right;
-  margin-top: 10px;
-}
-.totales-descuentos div,
-.totales-extras div,
-.totales-pago div {
-  margin: 5px 0;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-/* Botón PDF */
-.acciones {
-  text-align: center;
-}
-
-/* Ajuste responsivo */
-@media (max-width: 600px) {
-  .student-row,
-  .discount-row,
-  .extra-program-row {
-    flex-direction: column;
-    gap: 0;
+/* Print / PDF styles */
+@media print {
+  body {
+    background: white !important;
   }
-  button[type="submit"],
-  button[type="button"],
-  .pdf-button {
-    width: 100%;
-    max-width: 100%;
+  header, .lg\:col-span-5, #btnGenerarPDF {
+    display: none !important;
   }
+  #recibo-container {
+    display: block !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Student row delete animation */
+.student-card, .discount-card, .program-card {
+  animation: slideIn 0.2s ease-out;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
