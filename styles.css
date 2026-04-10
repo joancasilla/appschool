@@ -1,0 +1,33 @@
+/* styles.css — Tailwind overrides & print */
+
+/* Smooth inputs */
+input, select { transition: border-color 0.15s, box-shadow 0.15s; }
+
+/* Clean number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
+
+/* Table rows — subtle zebra on receipt */
+#tablaDescuentos tr:nth-child(even),
+#tablaProgramas tr:nth-child(even),
+#tablaAcuerdo tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+/* Card entry animations */
+.student-card, .discount-card, .program-card {
+  animation: cardIn 0.15s ease-out;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Print */
+@media print {
+  body { background: white !important; }
+  header, .lg\:col-span-5, #btnGenerarPDF { display: none !important; }
+  #recibo-container { display: block !important; }
+  #previewWrapper { border: none !important; box-shadow: none !important; }
+}
