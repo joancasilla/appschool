@@ -451,7 +451,6 @@ function recalculate() {
 
   for (let i = 0; i < totalRows; i++) {
     const coleg = colegRows[i];
-    const concepto = coleg ? coleg.concepto : `Cuota ${i + 1}`;
     const colegAmt = coleg ? coleg.colegiatura : 0;
     let extraAmt = 0;
     extraDistributions.forEach(ed => {
@@ -463,10 +462,31 @@ function recalculate() {
     const total = colegAmt + extraAmt;
     sumPagar += total;
 
+    // Label logic
+    let concepto;
+    let rowClass = "";
+    if (coleg) {
+      concepto = coleg.concepto;
+    } else {
+      // Program-only rows after colegiatura ends
+      const mensualNum = i - colegRows.length + 1;
+      concepto = `Pago Mensual ${mensualNum} <span class="text-slate-400 text-[10px]">(Solo Programas)</span>`;
+      rowClass = "text-slate-500";
+    }
+
     const tr = document.createElement("tr");
+    tr.className = rowClass;
+
+    // Show separator before program-only rows
+    if (!coleg && i === colegRows.length) {
+      const sepTr = document.createElement("tr");
+      sepTr.innerHTML = `<td colspan="4" class="px-2 py-1"><div class="border-t border-dashed border-slate-200"></div></td>`;
+      tbodyAcuerdo.appendChild(sepTr);
+    }
+
     tr.innerHTML = `
       <td class="px-2 py-2">${concepto}</td>
-      <td class="px-2 py-2 text-right font-mono">RD$ ${fmt(colegAmt)}</td>
+      <td class="px-2 py-2 text-right font-mono">${colegAmt > 0 ? "RD$ " + fmt(colegAmt) : "—"}</td>
       <td class="px-2 py-2 text-right font-mono">${extraAmt > 0 ? "RD$ " + fmt(extraAmt) : "—"}</td>
       <td class="px-2 py-2 text-right font-mono font-bold">RD$ ${fmt(total)}</td>
     `;
