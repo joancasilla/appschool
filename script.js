@@ -26,31 +26,25 @@ function getPlanDiscountPct(plan) {
 }
 
 function distributeColegiatura(planName, total) {
-  const rows = [];
+  const schedule = [];
   if (planName === "Plan A - 10 pagos") {
     const ini = total * 0.16;
     const cuota = (total - ini) / 10;
-    rows.push({ concepto: "Cuota Inicial (16%)", colegiatura: ini });
-    for (let i = 1; i <= 10; i++) rows.push({ concepto: `Cuota ${i}`, colegiatura: cuota });
+    schedule.push({ month: 0, label: "Cuota Inicial (16%)", amount: ini });
+    for (let i = 1; i <= 10; i++) schedule.push({ month: i, label: `Cuota ${i}`, amount: cuota });
   } else if (planName === "Plan A - 11 pagos") {
     const ini = total * 0.16;
     const cuota = (total - ini) / 11;
-    rows.push({ concepto: "Cuota Inicial (16%)", colegiatura: ini });
-    for (let i = 1; i <= 11; i++) rows.push({ concepto: `Cuota ${i}`, colegiatura: cuota });
+    schedule.push({ month: 0, label: "Cuota Inicial (16%)", amount: ini });
+    for (let i = 1; i <= 11; i++) schedule.push({ month: i, label: `Cuota ${i}`, amount: cuota });
   } else if (planName === "Plan B - 2 pagos") {
     const ini = total * 0.55;
-    const fin = total - ini;
-    rows.push({ concepto: "Cuota Inicial (55%)", colegiatura: ini });
-    // Cuotas 1-3 (Sep-Nov): sin colegiatura
-    rows.push({ concepto: "Cuota 1", colegiatura: 0 });
-    rows.push({ concepto: "Cuota 2", colegiatura: 0 });
-    rows.push({ concepto: "Cuota 3", colegiatura: 0 });
-    // Cuota 4 (Dic): Cuota Final
-    rows.push({ concepto: "Cuota 4 — Pago Final (45%)", colegiatura: fin });
+    schedule.push({ month: 0, label: "Cuota Inicial — Colegiatura", amount: ini });
+    schedule.push({ month: 4, label: "Cuota Final — Colegiatura", amount: total - ini });
   } else if (planName === "Plan C - 1 pago") {
-    rows.push({ concepto: "Cuota Única (100%)", colegiatura: total });
+    schedule.push({ month: 0, label: "Pago Único — Colegiatura", amount: total });
   }
-  return rows;
+  return schedule;
 }
 
 function distributeExtraCost(distType, totalCost) {
@@ -413,7 +407,7 @@ function recalculate() {
 
   // ── B) PROGRAMAS ADICIONALES ──
   let totalExtras = 0;
-  const extraDistributions = [];
+  const progSchedules = [];
   const tbodyProg = $("tablaProgramas");
   tbodyProg.innerHTML = "";
 
@@ -436,68 +430,74 @@ function recalculate() {
       <td class="px-2 py-2 text-right font-mono">RD$ ${fmt(cost)}</td>
     `;
     tbodyProg.appendChild(tr);
-    extraDistributions.push({ distArray: distributeExtraCost(distType, cost), offset: startOffset });
+
+    // Build month schedule for this program
+    const distArray = distributeExtraCost(distType, cost);
+    const months = distArray.map((amt, idx) => ({
+      month: startOffset + idx,
+      cuotaNum: idx + 1,
+      amount: amt
+    }));
+    progSchedules.push({ name, months });
   });
 
   $("seccionProgramas").style.display = totalExtras > 0 ? "block" : "none";
   $("totalExtras").textContent = `RD$ ${fmt(totalExtras)}`;
 
-  // ── C) ACUERDO DE PAGO ──
-  const colegRows = distributeColegiatura(plan, finalSum);
-  let maxExtra = 0;
-  extraDistributions.forEach(ed => {
-    const totalLen = ed.offset + ed.distArray.length;
-    if (totalLen > maxExtra) maxExtra = totalLen;
-  });
-  const totalRows = Math.max(colegRows.length, maxExtra);
+  // ── C) ACUERDO DE PAGO (month-based timeline) ──
+  const colegSchedule = distributeColegiatura(plan, finalSum);
+
+  // Collect all months that have any payment
+  const monthsSet = new Set();
+  colegSchedule.forEach(c => monthsSet.add(c.month));
+  progSchedules.forEach(p => p.months.forEach(m => monthsSet.add(m.month)));
+  const allMonths = [...monthsSet].sort((a, b) => a - b);
 
   const tbodyAcuerdo = $("tablaAcuerdo");
   tbodyAcuerdo.innerHTML = "";
   let sumPagar = 0;
 
-  for (let i = 0; i < totalRows; i++) {
-    const coleg = colegRows[i];
-    const colegAmt = coleg ? coleg.colegiatura : 0;
-    let extraAmt = 0;
-    extraDistributions.forEach(ed => {
-      const idx = i - ed.offset;
-      if (idx >= 0 && idx < ed.distArray.length) {
-        extraAmt += ed.distArray[idx];
-      }
+  allMonths.forEach(month => {
+    const coleg = colegSchedule.find(c => c.month === month);
+    const progsThisMonth = [];
+    progSchedules.forEach(p => {
+      const m = p.months.find(m => m.month === month);
+      if (m) progsThisMonth.push({ name: p.name, cuotaNum: m.cuotaNum, amount: m.amount });
     });
-    const total = colegAmt + extraAmt;
+
+    const colegAmt = coleg ? coleg.amount : 0;
+    const progAmt = progsThisMonth.reduce((sum, p) => sum + p.amount, 0);
+    const total = colegAmt + progAmt;
     sumPagar += total;
 
-    // Label logic
-    let concepto;
-    let rowClass = "";
-    if (coleg) {
-      concepto = coleg.concepto;
+    // Build smart label
+    let concepto = "";
+    if (coleg && progsThisMonth.length) {
+      const isRegularCuota = /^Cuota \d+$/.test(coleg.label);
+      if (isRegularCuota) {
+        // Plan A: "Cuota 3 + Afterschool"
+        const progNames = progsThisMonth.map(p => p.name).join(", ");
+        concepto = `${coleg.label} <span class="text-slate-400">+</span> ${progNames}`;
+      } else {
+        // Plan B/C special payments: "Cuota Final — Colegiatura + Cuota 4 — Afterschool"
+        const progParts = progsThisMonth.map(p => `Cuota ${p.cuotaNum} — ${p.name}`).join(" + ");
+        concepto = `${coleg.label} <span class="text-slate-400">+</span> ${progParts}`;
+      }
+    } else if (coleg) {
+      concepto = coleg.label;
     } else {
-      // Program-only rows after colegiatura ends
-      const mensualNum = i - colegRows.length + 1;
-      concepto = `Pago Mensual ${mensualNum} <span class="text-slate-400 text-[10px]">(Solo Programas)</span>`;
-      rowClass = "text-slate-500";
+      concepto = progsThisMonth.map(p => `Cuota ${p.cuotaNum} — ${p.name}`).join(" + ");
     }
 
     const tr = document.createElement("tr");
-    tr.className = rowClass;
-
-    // Show separator before program-only rows
-    if (!coleg && i === colegRows.length) {
-      const sepTr = document.createElement("tr");
-      sepTr.innerHTML = `<td colspan="4" class="px-2 py-1"><div class="border-t border-dashed border-slate-200"></div></td>`;
-      tbodyAcuerdo.appendChild(sepTr);
-    }
-
     tr.innerHTML = `
       <td class="px-2 py-2">${concepto}</td>
       <td class="px-2 py-2 text-right font-mono">${colegAmt > 0 ? "RD$ " + fmt(colegAmt) : "—"}</td>
-      <td class="px-2 py-2 text-right font-mono">${extraAmt > 0 ? "RD$ " + fmt(extraAmt) : "—"}</td>
+      <td class="px-2 py-2 text-right font-mono">${progAmt > 0 ? "RD$ " + fmt(progAmt) : "—"}</td>
       <td class="px-2 py-2 text-right font-mono font-bold">RD$ ${fmt(total)}</td>
     `;
     tbodyAcuerdo.appendChild(tr);
-  }
+  });
 
   $("totalAPagar").textContent = `RD$ ${fmt(sumPagar)}`;
 }
