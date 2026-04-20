@@ -39,8 +39,14 @@ function distributeColegiatura(planName, total) {
     for (let i = 1; i <= 11; i++) rows.push({ concepto: `Cuota ${i}`, colegiatura: cuota });
   } else if (planName === "Plan B - 2 pagos") {
     const ini = total * 0.55;
+    const fin = total - ini;
     rows.push({ concepto: "Cuota Inicial (55%)", colegiatura: ini });
-    rows.push({ concepto: "Cuota Final (45%)", colegiatura: total - ini });
+    // Cuotas 1-3 (Sep-Nov): sin colegiatura
+    rows.push({ concepto: "Cuota 1", colegiatura: 0 });
+    rows.push({ concepto: "Cuota 2", colegiatura: 0 });
+    rows.push({ concepto: "Cuota 3", colegiatura: 0 });
+    // Cuota 4 (Dic): Cuota Final
+    rows.push({ concepto: "Cuota 4 — Pago Final (45%)", colegiatura: fin });
   } else if (planName === "Plan C - 1 pago") {
     rows.push({ concepto: "Cuota Única (100%)", colegiatura: total });
   }
