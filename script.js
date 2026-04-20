@@ -187,9 +187,13 @@ function addDiscount() {
 
   div.innerHTML = `
     <select class="disc-student-select px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-sm w-20 focus:ring-2 focus:ring-brand-300 outline-none transition-all">${studentOpts}</select>
-    <input type="text" placeholder="Concepto" class="disc-concepto flex-1 min-w-[100px] px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-sm focus:ring-2 focus:ring-brand-300 outline-none transition-all">
+    <select class="disc-type px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-sm focus:ring-2 focus:ring-brand-300 outline-none transition-all">
+      <option value="descuento">Descuento</option>
+      <option value="cargo">Cargo</option>
+    </select>
+    <input type="text" placeholder="Concepto" class="disc-concepto flex-1 min-w-[80px] px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-sm focus:ring-2 focus:ring-brand-300 outline-none transition-all">
     <div class="flex items-center gap-1">
-      <input type="number" step="0.01" placeholder="%" class="disc-pct w-20 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-sm text-right focus:ring-2 focus:ring-brand-300 outline-none transition-all">
+      <input type="number" step="0.01" min="0" placeholder="%" class="disc-pct w-16 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-sm text-right focus:ring-2 focus:ring-brand-300 outline-none transition-all">
       <span class="text-[10px] text-slate-400 font-bold">%</span>
     </div>
     <button type="button" class="btn-remove text-slate-300 hover:text-red-400 transition-colors p-0.5">
@@ -227,6 +231,10 @@ function addExtraProgram() {
       <option value="1">1 cuota</option>
       <option value="2">2 cuotas</option>
       <option value="10">10 cuotas</option>
+    </select>
+    <select class="prog-start px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-sm focus:ring-2 focus:ring-brand-300 outline-none transition-all">
+      <option value="0">Desde Cuota Inicial</option>
+      <option value="1" selected>Desde Cuota 1</option>
     </select>
     <button type="button" class="btn-remove text-slate-300 hover:text-red-400 transition-colors p-0.5">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -361,13 +369,15 @@ function recalculate() {
       const dEl = disc.el;
       const dEst = parseInt(dEl.querySelector(".disc-student-select").value);
       if (dEst !== index + 1) return;
-      const concepto = dEl.querySelector(".disc-concepto").value.trim() || "Desc./Cargo";
-      const pct = parseFloat(dEl.querySelector(".disc-pct").value) || 0;
-      const dAmount = costSoFar * (Math.abs(pct) / 100);
+      const tipo = dEl.querySelector(".disc-type").value; // "descuento" or "cargo"
+      const concepto = dEl.querySelector(".disc-concepto").value.trim() || (tipo === "descuento" ? "Descuento" : "Cargo");
+      const rawPct = Math.abs(parseFloat(dEl.querySelector(".disc-pct").value) || 0);
+      const pct = tipo === "descuento" ? -rawPct : rawPct;
+      const dAmount = costSoFar * (rawPct / 100);
       discountRowsGlobal.push({
         est: index + 1, concepto, base: costSoFar, pct, monto: dAmount
       });
-      costSoFar += (pct < 0 ? -dAmount : dAmount);
+      costSoFar += (tipo === "descuento" ? -dAmount : dAmount);
     });
 
     finalSum += costSoFar;
@@ -407,18 +417,20 @@ function recalculate() {
     const name = el.querySelector(".prog-name").value.trim() || "Programa";
     const cost = parseFloat(el.querySelector(".prog-cost").value) || 0;
     const distType = el.querySelector(".prog-dist").value;
+    const startOffset = parseInt(el.querySelector(".prog-start").value) || 0;
     if (cost <= 0) return;
 
     totalExtras += cost;
+    const startLabel = startOffset === 0 ? "Desde Cuota Inicial" : "Desde Cuota 1";
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td class="px-2 py-2 text-slate-400">${stNum}</td>
       <td class="px-2 py-2">${name}</td>
-      <td class="px-2 py-2">${distType} cuota(s)</td>
+      <td class="px-2 py-2">${distType} cuota(s) · ${startLabel}</td>
       <td class="px-2 py-2 text-right font-mono">RD$ ${fmt(cost)}</td>
     `;
     tbodyProg.appendChild(tr);
-    extraDistributions.push({ distArray: distributeExtraCost(distType, cost) });
+    extraDistributions.push({ distArray: distributeExtraCost(distType, cost), offset: startOffset });
   });
 
   $("seccionProgramas").style.display = totalExtras > 0 ? "block" : "none";
@@ -427,7 +439,10 @@ function recalculate() {
   // ── C) ACUERDO DE PAGO ──
   const colegRows = distributeColegiatura(plan, finalSum);
   let maxExtra = 0;
-  extraDistributions.forEach(ed => { if (ed.distArray.length > maxExtra) maxExtra = ed.distArray.length; });
+  extraDistributions.forEach(ed => {
+    const totalLen = ed.offset + ed.distArray.length;
+    if (totalLen > maxExtra) maxExtra = totalLen;
+  });
   const totalRows = Math.max(colegRows.length, maxExtra);
 
   const tbodyAcuerdo = $("tablaAcuerdo");
@@ -439,7 +454,12 @@ function recalculate() {
     const concepto = coleg ? coleg.concepto : `Cuota ${i + 1}`;
     const colegAmt = coleg ? coleg.colegiatura : 0;
     let extraAmt = 0;
-    extraDistributions.forEach(ed => { if (ed.distArray[i] !== undefined) extraAmt += ed.distArray[i]; });
+    extraDistributions.forEach(ed => {
+      const idx = i - ed.offset;
+      if (idx >= 0 && idx < ed.distArray.length) {
+        extraAmt += ed.distArray[idx];
+      }
+    });
     const total = colegAmt + extraAmt;
     sumPagar += total;
 
