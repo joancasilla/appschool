@@ -4,24 +4,13 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Colegiatura — Colegio San Martín de Porres</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50:'#f0f5fc',100:'#dce8f7',200:'#b5ceed',300:'#7eaede',
-              400:'#4a8bcb',500:'#003f87',600:'#003672',700:'#002b5c',800:'#001f42',900:'#00142d',
-            }
-          },
-          fontFamily: {
-            sans: ['"Poppins"','system-ui','sans-serif'],
-            mono: ['"JetBrains Mono"','monospace'],
-          }
-        }
-      }
+      theme: { extend: {
+        colors: { brand:{50:'#f0f5fc',100:'#dce8f7',200:'#b5ceed',300:'#7eaede',400:'#4a8bcb',500:'#003f87',600:'#003672',700:'#002b5c',800:'#001f42',900:'#00142d'} },
+        fontFamily: { sans:['"Poppins"','system-ui','sans-serif'], mono:['"JetBrains Mono"','monospace'] }
+      }}
     }
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,330 +20,203 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-[#f0f2f5] text-slate-700 min-h-screen flex flex-col">
+<body class="bg-[#f0f2f5] text-slate-700 min-h-screen">
 
   <!-- NAVBAR -->
-  <header class="bg-white border-b border-slate-200 shadow-sm">
-    <div class="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
+  <header class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-50">
+    <div class="max-w-[1480px] mx-auto px-6 h-14 flex items-center justify-between">
       <div class="flex items-center gap-4">
         <img src="images/logosmp.png" alt="SMP" class="h-10 w-auto" onerror="this.style.display='none'">
         <div class="h-6 w-px bg-slate-200"></div>
         <h1 class="text-brand-500 text-xs font-extrabold uppercase tracking-[0.2em]">Información de Colegiatura</h1>
       </div>
+      <button id="btnGenerarPDF" class="hidden bg-brand-500 text-white font-bold text-[11px] uppercase tracking-wider px-5 py-2.5 rounded-lg hover:bg-brand-600 transition-all active:scale-[0.97] shadow-sm items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+        Descargar PDF
+      </button>
     </div>
   </header>
 
-  <!-- WIZARD CONTAINER -->
-  <main class="flex-1 flex flex-col">
-    <div class="max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 flex-1 flex flex-col">
+  <main class="max-w-[1480px] mx-auto px-4 sm:px-6 py-5">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
-      <!-- PROGRESS BAR -->
-      <div class="mb-6" id="progressBar">
-        <div class="flex items-center justify-between mb-2">
-          <span id="stepLabel" class="text-xs font-bold text-brand-500 uppercase tracking-wider">Paso 1 de 4</span>
-          <span id="stepTitle" class="text-xs font-semibold text-slate-400">Datos de la familia</span>
-        </div>
-        <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
-          <div id="progressFill" class="h-full bg-brand-500 rounded-full transition-all duration-500 ease-out" style="width:25%"></div>
-        </div>
-      </div>
+      <!-- ═══ LEFT: WIZARD ═══ -->
+      <section id="wizardPanel" class="lg:col-span-5">
 
-      <!-- ═══ STEP 1: FAMILIA ═══ -->
-      <div id="step1" class="step-panel flex-1">
-        <div class="bg-white rounded-xl shadow-sm border border-black/[0.06] p-6 sm:p-8">
-          <div class="text-center mb-6">
-            <div class="w-14 h-14 rounded-full bg-brand-50 flex items-center justify-center mx-auto mb-3">
-              <svg class="w-7 h-7 text-brand-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
-            </div>
-            <h2 class="text-lg font-extrabold text-slate-800">¿Para qué familia es el presupuesto?</h2>
-            <p class="text-sm text-slate-400 mt-1">Las fechas se llenan automáticamente</p>
+        <!-- Progress -->
+        <div class="mb-4">
+          <div class="flex items-center justify-between mb-1.5">
+            <span id="stepLabel" class="text-[11px] font-extrabold text-brand-500 uppercase tracking-wider">Paso 1 de 4</span>
+            <span id="stepTitle" class="text-[11px] font-semibold text-slate-400">Familia</span>
           </div>
-          <div class="space-y-4 max-w-sm mx-auto">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Apellido de la Familia</label>
-              <input type="text" id="inputFamilia" placeholder="Ej. RODRÍGUEZ PÉREZ" class="w-full px-4 py-3 bg-white border-2 border-slate-200 rounded-xl text-base focus:ring-0 focus:border-brand-400 outline-none transition-all uppercase font-bold text-slate-800 placeholder:text-slate-300 placeholder:font-normal placeholder:normal-case text-center">
+          <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+            <div id="progressFill" class="h-full bg-brand-500 rounded-full transition-all duration-500" style="width:25%"></div>
+          </div>
+        </div>
+
+        <!-- Edit-all mode header -->
+        <div id="editAllBar" class="mb-4 hidden">
+          <div class="flex items-center justify-between bg-white rounded-lg px-4 py-2.5 border border-black/[0.06] shadow-sm">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span class="text-[12px] font-bold text-slate-600">Editando todos los campos</span>
             </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Emisión</label>
-                <input type="date" id="inputFechaEmision" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-0 focus:border-brand-400 outline-none transition-all text-slate-600">
+            <button onclick="backToWizard()" class="text-[11px] font-bold text-brand-500 hover:text-brand-700 transition-colors">Volver al paso a paso →</button>
+          </div>
+        </div>
+
+        <!-- STEP 1: FAMILIA -->
+        <div id="step1" class="wizard-step">
+          <div class="bg-white rounded-xl shadow-sm border border-black/[0.06] p-6">
+            <div class="compact-header hidden items-center gap-2 mb-3"><div class="w-1 h-4 rounded-sm bg-brand-500"></div><h2 class="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">Familia</h2></div>
+            <div class="text-center mb-5 step-icon">
+              <div class="w-12 h-12 rounded-full bg-brand-50 flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-brand-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
               </div>
-              <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Vencimiento</label>
-                <input type="date" id="inputFechaVencimiento" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:ring-0 focus:border-brand-400 outline-none transition-all text-slate-600">
+              <h2 class="text-lg font-extrabold text-slate-800">¿Para qué familia?</h2>
+            </div>
+            <div class="max-w-xs mx-auto">
+              <input type="text" id="inputFamilia" placeholder="Apellido de la familia" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-base font-semibold text-slate-800 text-center focus:border-brand-400 outline-none transition-all placeholder:text-slate-300 placeholder:font-normal capitalize-input">
+            </div>
+          </div>
+          <div class="flex justify-end mt-4 step-nav">
+            <button onclick="goToStep(2)" class="btn-next">Siguiente →</button>
+          </div>
+        </div>
+
+        <!-- STEP 2: ESTUDIANTES -->
+        <div id="step2" class="wizard-step hidden">
+          <div class="bg-white rounded-xl shadow-sm border border-black/[0.06] p-6">
+            <div class="compact-header hidden items-center gap-2 mb-3"><div class="w-1 h-4 rounded-sm bg-emerald-500"></div><h2 class="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">Estudiantes</h2><button type="button" id="btnAddStudent2" class="ml-auto add-btn">+ Agregar</button></div>
+            <div class="text-center mb-4 step-icon">
+              <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.62 48.62 0 0112 20.904a48.62 48.62 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.636 50.636 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"/></svg>
               </div>
+              <h2 class="text-lg font-extrabold text-slate-800">Estudiantes</h2>
+              <p class="text-xs text-slate-400 mt-1">Desc. familiar: 2° 5% · 3° 10% · 4° 15% · 5° 25%</p>
+            </div>
+            <div id="studentContainer" class="space-y-2.5"></div>
+            <div class="text-center mt-3 step-icon">
+              <button type="button" id="btnAddStudent" class="add-btn text-sm px-4 py-2">+ Agregar estudiante</button>
             </div>
           </div>
+          <div class="flex justify-between mt-4 step-nav">
+            <button onclick="goToStep(1)" class="btn-back">← Atrás</button>
+            <button onclick="goToStep(3)" class="btn-next">Siguiente →</button>
+          </div>
         </div>
-        <div class="flex justify-end mt-4">
-          <button onclick="goToStep(2)" class="btn-next bg-brand-500 text-white font-bold text-sm px-8 py-3 rounded-xl hover:bg-brand-600 transition-all active:scale-[0.97] shadow-sm">
-            Siguiente →
-          </button>
-        </div>
-      </div>
 
-      <!-- ═══ STEP 2: ESTUDIANTES ═══ -->
-      <div id="step2" class="step-panel flex-1 hidden">
-        <div class="bg-white rounded-xl shadow-sm border border-black/[0.06] p-6 sm:p-8">
-          <div class="text-center mb-5">
-            <div class="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-3">
-              <svg class="w-7 h-7 text-emerald-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.62 48.62 0 0112 20.904a48.62 48.62 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.636 50.636 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"/></svg>
-            </div>
-            <h2 class="text-lg font-extrabold text-slate-800">Agrega los estudiantes</h2>
-            <p class="text-sm text-slate-400 mt-1">Nombre, nivel y año de ingreso de cada uno</p>
-          </div>
-          <div id="studentContainer" class="space-y-3 max-w-lg mx-auto"></div>
-          <div class="text-center mt-4">
-            <button type="button" id="btnAddStudent" class="text-sm font-bold text-brand-500 hover:text-brand-700 inline-flex items-center gap-1.5 transition-colors px-4 py-2 rounded-lg hover:bg-brand-50 active:scale-95">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-              Agregar otro estudiante
-            </button>
-          </div>
-        </div>
-        <div class="flex justify-between mt-4">
-          <button onclick="goToStep(1)" class="btn-back text-slate-500 font-semibold text-sm px-6 py-3 rounded-xl hover:bg-white transition-all">← Atrás</button>
-          <button onclick="goToStep(3)" class="btn-next bg-brand-500 text-white font-bold text-sm px-8 py-3 rounded-xl hover:bg-brand-600 transition-all active:scale-[0.97] shadow-sm">Siguiente →</button>
-        </div>
-      </div>
-
-      <!-- ═══ STEP 3: PLAN DE PAGO ═══ -->
-      <div id="step3" class="step-panel flex-1 hidden">
-        <div class="bg-white rounded-xl shadow-sm border border-black/[0.06] p-6 sm:p-8">
-          <div class="text-center mb-6">
-            <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-3">
-              <svg class="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>
-            </div>
-            <h2 class="text-lg font-extrabold text-slate-800">Selecciona el plan de pago</h2>
-          </div>
-          <div class="grid gap-3 max-w-sm mx-auto" id="planOptions">
-            <label class="plan-option cursor-pointer block">
-              <input type="radio" name="plan" value="Plan A - 10 pagos" class="hidden peer">
-              <div class="border-2 border-slate-200 rounded-xl p-4 peer-checked:border-brand-500 peer-checked:bg-brand-50 transition-all hover:border-slate-300">
-                <div class="flex justify-between items-center">
-                  <div>
-                    <p class="font-bold text-slate-800">Plan A — 10 cuotas</p>
-                    <p class="text-xs text-slate-400 mt-0.5">Cuota inicial 16% + 10 pagos mensuales</p>
-                  </div>
-                  <div class="w-5 h-5 rounded-full border-2 border-slate-300 peer-checked:border-brand-500 flex items-center justify-center shrink-0">
-                    <div class="w-2.5 h-2.5 rounded-full bg-brand-500 scale-0 peer-checked:scale-100 transition-transform"></div>
-                  </div>
-                </div>
+        <!-- STEP 3: PLAN -->
+        <div id="step3" class="wizard-step hidden">
+          <div class="bg-white rounded-xl shadow-sm border border-black/[0.06] p-6">
+            <div class="compact-header hidden items-center gap-2 mb-3"><div class="w-1 h-4 rounded-sm bg-blue-500"></div><h2 class="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">Plan de Pago</h2></div>
+            <div class="text-center mb-5 step-icon">
+              <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>
               </div>
-            </label>
-            <label class="plan-option cursor-pointer block">
-              <input type="radio" name="plan" value="Plan A - 11 pagos" class="hidden peer">
-              <div class="border-2 border-slate-200 rounded-xl p-4 peer-checked:border-brand-500 peer-checked:bg-brand-50 transition-all hover:border-slate-300">
-                <div class="flex justify-between items-center">
-                  <div>
-                    <p class="font-bold text-slate-800">Plan A — 11 cuotas</p>
-                    <p class="text-xs text-slate-400 mt-0.5">Cuota inicial 16% + 11 pagos mensuales</p>
-                  </div>
-                </div>
-              </div>
-            </label>
-            <label class="plan-option cursor-pointer block">
-              <input type="radio" name="plan" value="Plan B - 2 pagos" class="hidden peer">
-              <div class="border-2 border-slate-200 rounded-xl p-4 peer-checked:border-brand-500 peer-checked:bg-brand-50 transition-all hover:border-slate-300">
-                <div class="flex justify-between items-center">
-                  <div>
-                    <p class="font-bold text-slate-800">Plan B — 2 pagos</p>
-                    <p class="text-xs text-slate-400 mt-0.5">55% inicial + 45% en diciembre · <span class="text-emerald-600 font-semibold">8% desc.</span></p>
-                  </div>
-                </div>
-              </div>
-            </label>
-            <label class="plan-option cursor-pointer block">
-              <input type="radio" name="plan" value="Plan C - 1 pago" class="hidden peer">
-              <div class="border-2 border-slate-200 rounded-xl p-4 peer-checked:border-brand-500 peer-checked:bg-brand-50 transition-all hover:border-slate-300">
-                <div class="flex justify-between items-center">
-                  <div>
-                    <p class="font-bold text-slate-800">Plan C — Pago único</p>
-                    <p class="text-xs text-slate-400 mt-0.5">100% al inicio · <span class="text-emerald-600 font-semibold">16% desc.</span></p>
-                  </div>
-                </div>
-              </div>
-            </label>
-          </div>
-        </div>
-        <div class="flex justify-between mt-4">
-          <button onclick="goToStep(2)" class="btn-back text-slate-500 font-semibold text-sm px-6 py-3 rounded-xl hover:bg-white transition-all">← Atrás</button>
-          <button onclick="goToStep(4)" class="btn-next bg-brand-500 text-white font-bold text-sm px-8 py-3 rounded-xl hover:bg-brand-600 transition-all active:scale-[0.97] shadow-sm">Siguiente →</button>
-        </div>
-      </div>
-
-      <!-- ═══ STEP 4: EXTRAS (opcional) ═══ -->
-      <div id="step4" class="step-panel flex-1 hidden">
-        <div class="bg-white rounded-xl shadow-sm border border-black/[0.06] p-6 sm:p-8">
-          <div class="text-center mb-5">
-            <div class="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-3">
-              <svg class="w-7 h-7 text-amber-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <h2 class="text-lg font-extrabold text-slate-800">Plan de pago</h2>
             </div>
-            <h2 class="text-lg font-extrabold text-slate-800">¿Algo adicional?</h2>
-            <p class="text-sm text-slate-400 mt-1">Descuentos especiales, cargos o programas como Afterschool</p>
-          </div>
-
-          <!-- Descuentos -->
-          <div class="mb-5">
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">Descuentos / Cargos</h3>
-              <button type="button" id="btnAddDiscount" class="text-[11px] font-bold text-brand-500 hover:text-brand-700 flex items-center gap-1 px-2 py-1 rounded hover:bg-brand-50">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                Añadir
-              </button>
+            <div class="grid gap-2.5">
+              <label class="plan-card"><input type="radio" name="plan" value="Plan A - 10 pagos"><div class="plan-card-inner"><div><p class="font-bold text-sm">Plan A — 10 cuotas</p><p class="text-[11px] text-slate-400">16% inicial + 10 mensuales</p></div><span class="plan-check"></span></div></label>
+              <label class="plan-card"><input type="radio" name="plan" value="Plan A - 11 pagos"><div class="plan-card-inner"><div><p class="font-bold text-sm">Plan A — 11 cuotas</p><p class="text-[11px] text-slate-400">16% inicial + 11 mensuales</p></div><span class="plan-check"></span></div></label>
+              <label class="plan-card"><input type="radio" name="plan" value="Plan B - 2 pagos"><div class="plan-card-inner"><div><p class="font-bold text-sm">Plan B — 2 pagos</p><p class="text-[11px] text-slate-400">55% + 45% dic. · <span class="text-emerald-600 font-semibold">8% desc.</span></p></div><span class="plan-check"></span></div></label>
+              <label class="plan-card"><input type="radio" name="plan" value="Plan C - 1 pago"><div class="plan-card-inner"><div><p class="font-bold text-sm">Plan C — Pago único</p><p class="text-[11px] text-slate-400">100% al inicio · <span class="text-emerald-600 font-semibold">16% desc.</span></p></div><span class="plan-check"></span></div></label>
             </div>
-            <div id="discountContainer" class="space-y-2"></div>
           </div>
+          <div class="flex justify-between mt-4 step-nav">
+            <button onclick="goToStep(2)" class="btn-back">← Atrás</button>
+            <button onclick="goToStep(4)" class="btn-next">Siguiente →</button>
+          </div>
+        </div>
 
-          <div class="border-t border-slate-100 pt-5">
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">Programas Adicionales</h3>
-              <button type="button" id="btnAddExtraProgram" class="text-[11px] font-bold text-brand-500 hover:text-brand-700 flex items-center gap-1 px-2 py-1 rounded hover:bg-brand-50">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                Añadir
-              </button>
+        <!-- STEP 4: EXTRAS -->
+        <div id="step4" class="wizard-step hidden">
+          <div class="bg-white rounded-xl shadow-sm border border-black/[0.06] p-6">
+            <div class="compact-header hidden items-center gap-2 mb-3"><div class="w-1 h-4 rounded-sm bg-amber-400"></div><h2 class="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">Ajustes</h2></div>
+            <div class="text-center mb-5 step-icon">
+              <div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <h2 class="text-lg font-extrabold text-slate-800">Ajustes adicionales</h2>
+              <p class="text-xs text-slate-400 mt-1">Descuentos, cargos o programas como Afterschool</p>
             </div>
-            <div id="extraProgramsContainer" class="space-y-2"></div>
+            <!-- Discounts -->
+            <div class="mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <p class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Descuentos / Cargos</p>
+                <button type="button" id="btnAddDiscount" class="add-btn">+ Añadir</button>
+              </div>
+              <div id="discountContainer" class="space-y-2"></div>
+            </div>
+            <!-- Programs -->
+            <div class="border-t border-slate-100 pt-4">
+              <div class="flex items-center justify-between mb-2">
+                <p class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Programas Adicionales</p>
+                <button type="button" id="btnAddExtraProgram" class="add-btn">+ Añadir</button>
+              </div>
+              <div id="extraProgramsContainer" class="space-y-2"></div>
+            </div>
+          </div>
+          <div class="flex justify-between mt-4 step-nav">
+            <button onclick="goToStep(3)" class="btn-back">← Atrás</button>
+            <button onclick="showEditAll()" class="btn-next bg-emerald-600 hover:bg-emerald-700">Listo ✓</button>
           </div>
         </div>
-        <div class="flex justify-between mt-4">
-          <button onclick="goToStep(3)" class="btn-back text-slate-500 font-semibold text-sm px-6 py-3 rounded-xl hover:bg-white transition-all">← Atrás</button>
-          <button onclick="goToStep(5)" class="btn-next bg-emerald-600 text-white font-bold text-sm px-8 py-3 rounded-xl hover:bg-emerald-700 transition-all active:scale-[0.97] shadow-sm">Ver Presupuesto ✓</button>
-        </div>
-      </div>
 
-      <!-- ═══ STEP 5: RECEIPT ═══ -->
-      <div id="step5" class="step-panel flex-1 hidden">
-        <!-- Actions bar -->
-        <div class="flex items-center justify-between mb-4">
-          <button onclick="goToStep(1)" class="text-sm font-semibold text-slate-500 hover:text-brand-500 transition-colors flex items-center gap-1">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
-            Editar datos
-          </button>
-          <button id="btnGenerarPDF" class="bg-brand-500 text-white font-bold text-[11px] uppercase tracking-wider px-5 py-2.5 rounded-lg hover:bg-brand-600 transition-all active:scale-[0.97] shadow-sm flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
-            Descargar PDF
-          </button>
-        </div>
+      </section>
 
+      <!-- ═══ RIGHT: LIVE PREVIEW ═══ -->
+      <section class="lg:col-span-7 lg:sticky lg:top-20">
         <div id="previewWrapper" class="bg-white rounded-xl shadow-sm border border-black/[0.06]">
-          <div id="recibo-printable" class="p-6 sm:p-8">
 
-            <!-- Header -->
-            <div class="flex items-center justify-between mb-6 pb-4" style="border-bottom:2px solid #003f87;">
-              <img src="images/logosmp.png" alt="Logo" class="h-12 w-auto" onerror="this.style.display='none'">
-              <div class="text-right">
-                <p class="text-brand-500 text-[11px] font-extrabold uppercase tracking-[0.2em]">Información de Colegiatura</p>
-                <p class="text-brand-500 text-[13px] font-extrabold mt-0.5">Año Escolar 2026 – 2027</p>
-                <div class="text-[11px] text-slate-400 mt-1">
-                  <span>Emisión: <strong class="text-slate-600" id="rFechaEmision">—</strong></span>
-                  <span class="mx-1.5 text-slate-300">|</span>
-                  <span>Vence: <strong class="text-slate-600" id="rFechaVencimiento">—</strong></span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Family Card -->
-            <div class="mb-6 rounded-lg overflow-hidden border border-slate-200">
-              <div class="bg-slate-50 px-5 py-4 flex items-center justify-between">
-                <div>
-                  <p class="text-[9px] font-semibold text-slate-400 uppercase tracking-[0.15em] mb-1">Familia</p>
-                  <p id="rFamilia" class="font-extrabold text-slate-800 text-xl leading-tight">—</p>
-                </div>
-                <div id="rBadge" class="hidden">
-                  <div id="rBadgeIcon" class="w-11 h-11 rounded-full flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  </div>
-                  <p id="rBadgeYears" class="text-[9px] font-bold text-center mt-0.5">—</p>
-                </div>
-              </div>
-              <div class="grid grid-cols-3 divide-x divide-slate-200 bg-white">
-                <div class="px-4 py-3">
-                  <p class="text-[9px] font-semibold text-slate-400 uppercase tracking-[0.1em] mb-0.5">Antigüedad</p>
-                  <p id="rAntiguedad" class="font-bold text-slate-700 text-[13px]">—</p>
-                </div>
-                <div class="px-4 py-3">
-                  <p class="text-[9px] font-semibold text-slate-400 uppercase tracking-[0.1em] mb-0.5">Estudiantes</p>
-                  <p id="rCantEstudiantes" class="font-bold text-slate-700 text-[13px]">0</p>
-                </div>
-                <div class="px-4 py-3">
-                  <p class="text-[9px] font-semibold text-slate-400 uppercase tracking-[0.1em] mb-0.5">Plan de Pago</p>
-                  <p id="rPlan" class="font-bold text-slate-700 text-[13px]">—</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- COLEGIATURA -->
-            <div class="mb-6">
-              <h3 class="text-[10px] font-extrabold text-brand-500 uppercase tracking-[0.25em] mb-2 pb-1 border-b-2 border-brand-500 inline-block">Colegiatura</h3>
-              <table class="w-full text-xs mt-2">
-                <thead><tr class="text-[9px] text-slate-400 uppercase tracking-wider border-b border-slate-200">
-                  <th class="text-left px-2 py-2 font-bold w-8">#</th>
-                  <th class="text-left px-2 py-2 font-bold">Concepto</th>
-                  <th class="text-right px-2 py-2 font-bold">Base</th>
-                  <th class="text-right px-2 py-2 font-bold w-16">%</th>
-                  <th class="text-right px-2 py-2 font-bold">Monto</th>
-                </tr></thead>
-                <tbody id="tablaDescuentos"></tbody>
-              </table>
-              <div class="flex justify-end gap-8 mt-3 pt-3 border-t border-slate-200">
+          <div id="recibo-container">
+            <div id="recibo-printable" class="p-6 sm:p-8">
+              <!-- Header -->
+              <div class="flex items-center justify-between mb-6 pb-4" style="border-bottom:2px solid #003f87;">
+                <img src="images/logosmp.png" alt="Logo" class="h-12 w-auto" onerror="this.style.display='none'">
                 <div class="text-right">
-                  <p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Total Desc./Cargos</p>
-                  <p id="totalDescuentos" class="font-extrabold text-red-500 text-sm">– RD$ 0.00</p>
-                </div>
-                <div class="text-right">
-                  <p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Total Colegiatura</p>
-                  <p id="totalACobrar" class="font-extrabold text-slate-800 text-base">RD$ 0.00</p>
+                  <p class="text-brand-500 text-[11px] font-extrabold uppercase tracking-[0.2em]">Información de Colegiatura</p>
+                  <p class="text-brand-500 text-[13px] font-extrabold mt-0.5">Año Escolar 2026 – 2027</p>
+                  <div class="text-[11px] text-slate-400 mt-1">Emisión: <strong class="text-slate-600" id="rFechaEmision">—</strong> <span class="mx-1 text-slate-300">|</span> Vence: <strong class="text-slate-600" id="rFechaVencimiento">—</strong></div>
                 </div>
               </div>
-            </div>
-
-            <!-- PROGRAMAS -->
-            <div class="mb-6" id="seccionProgramas" style="display:none;">
-              <h3 class="text-[10px] font-extrabold text-brand-500 uppercase tracking-[0.25em] mb-2 pb-1 border-b-2 border-brand-500 inline-block">Programas Adicionales</h3>
-              <table class="w-full text-xs mt-2">
-                <thead><tr class="text-[9px] text-slate-400 uppercase tracking-wider border-b border-slate-200">
-                  <th class="text-left px-2 py-2 font-bold w-8">#</th>
-                  <th class="text-left px-2 py-2 font-bold">Programa</th>
-                  <th class="text-left px-2 py-2 font-bold">Distribución</th>
-                  <th class="text-right px-2 py-2 font-bold">Monto</th>
-                </tr></thead>
-                <tbody id="tablaProgramas"></tbody>
-              </table>
-              <div class="flex justify-end mt-3 pt-3 border-t border-slate-200">
-                <div class="text-right">
-                  <p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Total Programas</p>
-                  <p id="totalExtras" class="font-extrabold text-slate-800 text-sm">RD$ 0.00</p>
+              <!-- Family Card -->
+              <div class="mb-6 rounded-lg overflow-hidden border border-slate-200">
+                <div class="bg-slate-50 px-5 py-4 flex items-center justify-between">
+                  <div><p class="text-[9px] font-semibold text-slate-400 uppercase tracking-[0.15em] mb-1">Familia</p><p id="rFamilia" class="font-extrabold text-slate-800 text-xl leading-tight">—</p></div>
+                  <div id="rBadge" class="hidden text-center"><div id="rBadgeIcon" class="w-11 h-11 rounded-full flex items-center justify-center"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div><p id="rBadgeYears" class="text-[9px] font-bold mt-0.5">—</p></div>
+                </div>
+                <div class="grid grid-cols-3 divide-x divide-slate-200 bg-white">
+                  <div class="px-4 py-3"><p class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Antigüedad</p><p id="rAntiguedad" class="font-bold text-slate-700 text-[13px]">—</p></div>
+                  <div class="px-4 py-3"><p class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Estudiantes</p><p id="rCantEstudiantes" class="font-bold text-slate-700 text-[13px]">0</p></div>
+                  <div class="px-4 py-3"><p class="text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Plan</p><p id="rPlan" class="font-bold text-slate-700 text-[13px]">—</p></div>
                 </div>
               </div>
-            </div>
-
-            <!-- ACUERDO DE PAGO -->
-            <div>
-              <h3 class="text-[10px] font-extrabold text-brand-500 uppercase tracking-[0.25em] mb-2 pb-1 border-b-2 border-brand-500 inline-block">Acuerdo de Pago</h3>
-              <table class="w-full text-xs mt-2">
-                <thead><tr class="text-[9px] text-slate-400 uppercase tracking-wider border-b border-slate-200">
-                  <th class="text-left px-2 py-2 font-bold">Concepto</th>
-                  <th class="text-right px-2 py-2 font-bold">Colegiatura</th>
-                  <th class="text-right px-2 py-2 font-bold">Adicionales</th>
-                  <th class="text-right px-2 py-2 font-bold">Total Cuota</th>
-                </tr></thead>
-                <tbody id="tablaAcuerdo"></tbody>
-              </table>
-              <div class="mt-4 pt-3 flex justify-end" style="border-top:2px solid #003f87;">
-                <div class="text-right">
-                  <p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Total a Pagar</p>
-                  <p id="totalAPagar" class="font-extrabold text-brand-500 text-xl tracking-tight">RD$ 0.00</p>
+              <!-- Colegiatura -->
+              <div class="mb-6"><h3 class="section-title">Colegiatura</h3>
+                <table class="receipt-table"><thead><tr><th class="w-8">#</th><th>Concepto</th><th class="text-right">Base</th><th class="text-right w-16">%</th><th class="text-right">Monto</th></tr></thead><tbody id="tablaDescuentos"></tbody></table>
+                <div class="flex justify-end gap-8 mt-3 pt-3 border-t border-slate-200">
+                  <div class="text-right"><p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Total Desc./Cargos</p><p id="totalDescuentos" class="font-extrabold text-sm">– RD$ 0.00</p></div>
+                  <div class="text-right"><p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Total Colegiatura</p><p id="totalACobrar" class="font-extrabold text-slate-800 text-base">RD$ 0.00</p></div>
                 </div>
               </div>
+              <!-- Programas -->
+              <div class="mb-6" id="seccionProgramas" style="display:none;"><h3 class="section-title">Programas Adicionales</h3>
+                <table class="receipt-table"><thead><tr><th class="w-8">#</th><th>Programa</th><th>Distribución</th><th class="text-right">Monto</th></tr></thead><tbody id="tablaProgramas"></tbody></table>
+                <div class="flex justify-end mt-3 pt-3 border-t border-slate-200"><div class="text-right"><p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Total Programas</p><p id="totalExtras" class="font-extrabold text-slate-800 text-sm">RD$ 0.00</p></div></div>
+              </div>
+              <!-- Acuerdo -->
+              <div><h3 class="section-title">Acuerdo de Pago</h3>
+                <table class="receipt-table"><thead><tr><th>Concepto</th><th class="text-right">Colegiatura</th><th class="text-right">Adicionales</th><th class="text-right">Total Cuota</th></tr></thead><tbody id="tablaAcuerdo"></tbody></table>
+                <div class="mt-4 pt-3 flex justify-end" style="border-top:2px solid #003f87;"><div class="text-right"><p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Total a Pagar</p><p id="totalAPagar" class="font-extrabold text-brand-500 text-xl tracking-tight">RD$ 0.00</p></div></div>
+              </div>
             </div>
-
           </div>
         </div>
-      </div>
+      </section>
 
     </div>
   </main>
-
   <script src="script.js"></script>
 </body>
 </html>
