@@ -1,21 +1,17 @@
-/* styles.css — Tailwind overrides & print */
-
-/* Smooth inputs */
-input, select { transition: border-color 0.15s, box-shadow 0.15s; }
-
-/* Clean number inputs */
+/* styles.css */
+input, select { transition: border-color 0.2s, box-shadow 0.2s; }
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 input[type="number"] { -moz-appearance: textfield; }
 
-/* Table rows — subtle zebra on receipt */
-#tablaDescuentos tr:nth-child(even),
-#tablaProgramas tr:nth-child(even),
-#tablaAcuerdo tr:nth-child(even) {
-  background: #f8fafc;
+/* Step transitions */
+.step-panel { animation: fadeUp 0.3s ease-out; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Card entry animations */
+/* Card animations */
 .student-card, .discount-card, .program-card {
   animation: cardIn 0.15s ease-out;
 }
@@ -24,10 +20,23 @@ input[type="number"] { -moz-appearance: textfield; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Print */
+/* Zebra rows */
+#tablaDescuentos tr:nth-child(even),
+#tablaProgramas tr:nth-child(even),
+#tablaAcuerdo tr:nth-child(even) { background: #f8fafc; }
+
+/* Plan radio cards */
+.plan-option input:checked + div {
+  border-color: #003f87 !important;
+  background: #f0f5fc !important;
+}
+.plan-option input:checked + div .radio-dot {
+  transform: scale(1);
+}
+
 @media print {
   body { background: white !important; }
-  header, .lg\:col-span-5, #btnGenerarPDF { display: none !important; }
-  #recibo-container { display: block !important; }
+  header, #progressBar, .btn-back, .btn-next, #btnGenerarPDF, [onclick] { display: none !important; }
+  #step5 { display: block !important; }
   #previewWrapper { border: none !important; box-shadow: none !important; }
 }
